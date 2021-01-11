@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philippe Marchand, Université du Québec en Abitibi-Témiscamingue" />
+
+<meta name="date" content="2021-01-12" />
+
+<title>Spatial statistics in ecology, Part 1</title>
+
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="libs/navigation-1.1/tabsets.js"></script>
+<link href="libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Spatial statistics in ecology, Part 1</h1>
+<h4 class="author">Philippe Marchand, Université du Québec en Abitibi-Témiscamingue</h4>
+<h4 class="date">January 12, 2021</h4>
+
+</div>
+
+
+<div id="introduction-to-spatial-statistics" class="section level1">
+<h1>Introduction to spatial statistics</h1>
+<div id="types-of-spatial-analyses" class="section level2">
+<h2>Types of spatial analyses</h2>
+<p>In this training, we will discuss three types of spatial analyses: point pattern analysis, geostatistical models and models for areal data.</p>
+<p>In <strong>point pattern analysis</strong>, we have point data representing the position of individuals or events in a study area and we assume that all individuals or events have been identified in that area. That analysis focuses on the distribution of the positions of the points themselves. Here are some typical questions for the analysis of point patterns:</p>
+<ul>
+<li><p>Are the points randomly arranged or clustered?</p></li>
+<li><p>Are two types of points arranged independently?</p></li>
+</ul>
+<p><strong>Geostatistical models</strong> represent the spatial distribution of continuous variables that are measured at certain sampling points. They assume that measurements of those variables at different points are correlated as a function of the distance between the points. Applications of geostatistical models include the smoothing of spatial data (e.g., producing a map of a variable over an entire region based on point measurements) and the prediction of those variables for non-sampled points.</p>
+<p><strong>Areal data</strong> are measurements taken not at points, but for regions of space represented by polygons (e.g. administrative divisions, grid cells). Models representing these types of data define a network linking each region to its neighbours and include correlations in the variable of interest between neighbouring regions.</p>
+</div>
+<div id="stationarity-and-isotropy" class="section level2">
+<h2>Stationarity and isotropy</h2>
+<p>Several spatial analyses assume that the variables are <strong>stationary</strong> in space. As with stationarity in the time domain, this property means that summary statistics (mean, variance and correlations between measures of a variable) do not vary with translation in space. For example, the spatial correlation between two points may depend on the distance between them, but not on their absolute position.</p>
+<p>In particular, there cannot be a large-scale trend (often called <em>gradient</em> in a spatial context), or this trend must be taken into account before modelling the spatial correlation of residuals.</p>
+<p>In the case of point pattern analysis, stationarity (also called homogeneity) means that point density does not follow a large-scale trend.</p>
+<p>In a <strong>isotropic</strong> statistical model, the spatial correlations between measurements at two points depend only on the distance between the points, not on the direction. In this case, the summary statistics do not change under a spatial rotation of the data.</p>
+</div>
+<div id="georeferenced-data" class="section level2">
+<h2>Georeferenced data</h2>
+<p>Environmental studies increasingly use data from geospatial data sources, i.e. variables measured over a large part of the globe (e.g. climate, remote sensing). The processing of these data requires concepts related to Geographic Information Systems (GIS), which are not covered in this workshop, where we focus on the statistical aspects of spatially varying data.</p>
+<p>The use of geospatial data does not necessarily mean that spatial statistics are required. For example, we will often extract values of geographic variables at study points to explain a biological response observed in the field. In this case, the use of spatial statistics is only necessary when there is a spatial correlation in the residuals, after controlling for the effect of the predictors.</p>
+</div>
+</div>
+<div id="point-pattern-analysis" class="section level1">
+<h1>Point pattern analysis</h1>
+<div id="point-pattern-and-point-process" class="section level2">
+<h2>Point pattern and point process</h2>
+<p>A <em>point pattern</em> describes the spatial position (most often in 2D) of individuals or events, represented by points, in a given study area, often called the observation “window”.</p>
+<p>It is assumed that each point has a negligible spatial extent relative to the distances between the points. More complex methods exist to deal with spatial patterns of objects that have a non-negligible width, but this topic is beyond the scope of this workshop.</p>
+<p>A <em>point process</em> is a statistical model that can be used to simulate point patterns or explain an observed point pattern.</p>
+</div>
+<div id="complete-spatial-randomness" class="section level2">
+<h2>Complete spatial randomness</h2>
+<p>Complete spatial randomness (CSR) is one of the simplest point patterns, which serves as a null model for evaluating the characteristics of real point patterns. In this pattern, the presence of a point at a given position is independent of the presence of points in a neighbourhood.</p>
+<p>The process creating this pattern is a homogeneous Poisson process. According to this model, the number of points in any area <span class="math inline">\(A\)</span> follows a Poisson distribution: <span class="math inline">\(N(A) \sim \text{Pois}(\lambda A)\)</span>, where <span class="math inline">\(\lambda\)</span> is the <em>intensity</em> of the process (i.e. the density of points per unit area). <span class="math inline">\(N\)</span> is independent between two disjoint regions, no matter how those regions are defined.</p>
+<p>In the graph below, only the pattern on the right is completely random. The pattern on the left shows point aggregation (higher probability of observing a point close to another point), while the pattern in the center shows repulsion (low probability of observing a point very close to another).</p>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-2-1.png" width="864" /></p>
+</div>
+<div id="exploratory-or-inferential-analysis-for-a-point-pattern" class="section level2">
+<h2>Exploratory or inferential analysis for a point pattern</h2>
+<p>Several summary statistics are used to describe the characteristics of a point pattern. The simplest is the intensity <span class="math inline">\(\lambda\)</span>, which as mentioned above represents the density of points per unit area. If the point pattern is heterogeneous, the intensity is not constant, but depends on the position: <span class="math inline">\(\lambda(x, y)\)</span>.</p>
+<p>Compared to intensity, which is a first-order statistic, second-order statistics describe how the probability of the presence of a point in a region depends on the presence of other points. The Ripley’s <span class="math inline">\(K\)</span> function presented in the next section is an example of a second-order summary statistic.</p>
+<p>Statistical inferences on point patterns usually consist of testing the hypothesis that the point pattern corresponds to a given null model, such as CSR or a more complex null model. Even for the simplest null models, we rarely know the theoretical distribution for a summary statistic of the point pattern under the null model. Hypothesis tests on point patterns are therefore performed by simulation: a large number of point patterns are simulated from the null model and the distribution of the summary statistics of interest for these simulations is compared to their values for the observed point pattern.</p>
+</div>
+<div id="ripleys-k-function" class="section level2">
+<h2>Ripley’s K function</h2>
+<p>Ripley’s K function <span class="math inline">\(K(r)\)</span> is defined as the mean number of points within a circle of radius <span class="math inline">\(r\)</span> around a point in the pattern, standardized by the intensity <span class="math inline">\(\lambda\)</span>.</p>
+<p>Under the CSR null model, the mean number of points in any circle of radius <span class="math inline">\(r\)</span> is <span class="math inline">\(\lambda \pi r^2\)</span>, thus in theory <span class="math inline">\(K(r) = \pi r^2\)</span> for that model. A higher value of <span class="math inline">\(K(r)\)</span> means that there is an aggregation of points at the scale <span class="math inline">\(r\)</span>, whereas a lower value means that there is repulsion.</p>
+<p>In practice, <span class="math inline">\(K(r)\)</span> is estimated for a specific point pattern by the equation:</p>
+<p><span class="math display">\[ K(r) = \frac{A}{n(n-1)} \sum_i \sum_{j &gt; i} I \left( d_{ij} \le r \right) w_{ij}\]</span></p>
+<p>where <span class="math inline">\(A\)</span> is the area of the observation window and <span class="math inline">\(n\)</span> is the number of points in the pattern, so <span class="math inline">\(n(n-1)\)</span> is the number of distinct pairs of points. We take the sum for all pairs of points of the indicator function <span class="math inline">\(I\)</span>, which takes a value of 1 if the distance between points <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> is less than or equal to <span class="math inline">\(r\)</span>. Finally, the term <span class="math inline">\(w_{ij}\)</span> is used to give extra weight to certain pairs of points to account for edge effects, as discussed in the next section.</p>
+<p>For example, the graphs below show the estimated <span class="math inline">\(K(r)\)</span> function for the patterns shown above, for values of <span class="math inline">\(r\)</span> up to 1/4 of the window width. The red dashed curve shows the theoretical value for CSR and the gray area is an “envelope” produced by 99 simulations of that null pattern. The aggregated pattern shows an excess of neighbours up to <span class="math inline">\(r = 0.25\)</span> and the pattern with repulsion shows a significant deficit of neighbours for small values of <span class="math inline">\(r\)</span>.</p>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-4-1.png" width="864" /></p>
+<p>In addition to <span class="math inline">\(K\)</span>, there are other statistics to describe the second-order properties of point patterns, such as the mean distance between a point and its nearest <span class="math inline">\(N\)</span> neighbours. You can refer to the Wiegand and Moloney (2013) textbook in the references to learn more about different summary statistics for point patterns.</p>
+</div>
+<div id="edge-effects" class="section level2">
+<h2>Edge effects</h2>
+<p>In the context of point pattern analysis, edge effects are due to the fact that we have incomplete knowledge of the neighbourhood of points near the edge of the observation window, which can induce a bias in the calculation of statistics such as Ripley’s <span class="math inline">\(K\)</span>.</p>
+<p>Different methods have been developed to correct the bias due to edge effects. In Ripley’s edge correction method, the contribution of a neighbour <span class="math inline">\(j\)</span> located at a distance <span class="math inline">\(r\)</span> from a point <span class="math inline">\(i\)</span> receives a weight <span class="math inline">\(w_{ij} = 1/\phi_i(r)\)</span>, where <span class="math inline">\(\phi_i(r)\)</span> is the fraction of the circle of radius <span class="math inline">\(r\)</span> around <span class="math inline">\(i\)</span> contained in the observation window. For example, if 2/3 of the circle is in the window, this neighbour counts as 3/2 neighbours in the calculation of a statistic like <span class="math inline">\(K\)</span>.</p>
+<p><img src="images/ripley_edge.png" /></p>
+<p>Ripley’s method is one of the simplest to correct for edge effects, but is not necessarily the most efficient; in particular, larger weights given to certain pairs of points tend to increase the variance of the calculated statistic. Other correction methods are presented in specialized textbooks, such as Wiegand and Moloney (2013).</p>
+</div>
+<div id="example" class="section level2">
+<h2>Example</h2>
+<p>For this example, we use the dataset <a href="data/semis_xy.csv">semis_xy.csv</a>, which represents the <span class="math inline">\((x, y)\)</span> coordinates for seedlings of two species (<em>sp</em>, B = birch and P = poplar) in a 15 x 15 m plot.</p>
+<pre class="r"><code>semis &lt;- read.csv(&quot;data/semis_xy.csv&quot;)
+head(semis)</code></pre>
+<pre><code>##       x    y sp
+## 1 14.73 0.05  P
+## 2 14.72 1.71  P
+## 3 14.31 2.06  P
+## 4 14.16 2.64  P
+## 5 14.12 4.15  B
+## 6  9.88 4.08  B</code></pre>
+<p>The <em>spatstat</em> package provides tools for point pattern analysis in R. The first step consists in transforming our data frame into a <code>ppp</code> object (point pattern) with the function of the same name. In this function, we specify which columns contain the coordinates <em>x</em> and <em>y</em> as well as the <em>marks</em>, which here will be the species codes. We also need to specify an observation window (<code>window</code>) using the <code>owin</code> function, where we provide the plot limits in <em>x</em> and <em>y</em>.</p>
+<pre class="r"><code>library(spatstat)
+
+semis &lt;- ppp(x = semis$x, y = semis$y, marks = as.factor(semis$sp),
+             window = owin(xrange = c(0, 15), yrange = c(0, 15)))
+semis</code></pre>
+<pre><code>## Marked planar point pattern: 281 points
+## Multitype, with levels = B, P 
+## window: rectangle = [0, 15] x [0, 15] units</code></pre>
+<p>Marks can be numeric or categorical. Note that for categorical marks as is the case here, the variable must be explicitly converted to a factor.</p>
+<p>The <code>plot</code> function applied to a point pattern shows a diagram of the pattern.</p>
+<pre class="r"><code>plot(semis)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>The <code>intensity</code> function calculates the density of points of each species by unit area (here, by <span class="math inline">\(m^2\)</span>).</p>
+<pre class="r"><code>intensity(semis)</code></pre>
+<pre><code>##         B         P 
+## 0.6666667 0.5822222</code></pre>
+<p>To first analyze the distribution of each species separately, we split the pattern with <code>split</code>. Since the pattern contains categorical marks, it is automatically split according to the values of those marks. The result is a list of two point patterns.</p>
+<pre class="r"><code>semis_split &lt;- split(semis)
+plot(semis_split)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>The <code>Kest</code> function calculates Ripley’s <span class="math inline">\(K\)</span> for a series of distances up to (by default) 1/4 of the width of the window. Here we apply it to the first pattern (birch) by choosing <code>semis_split[[1]]</code>. Note that double square brackets are necessary to choose an item from a list in R.</p>
+<p>The argument <code>correction = "iso"</code> tells the function to apply Ripley’s correction for edge effects.</p>
+<pre class="r"><code>k &lt;- Kest(semis_split[[1]], correction = &quot;iso&quot;)
+plot(k)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-10-1.png" width="672" /></p>
+<p>According to this graph, there seems to be an excess of neighbours for distances of 1 m and above. To check if this is a significant difference, we produce a simulation envelope with the <code>envelope</code> function. The first argument of <code>envelope</code> is a point pattern to which the simulations will be compared, the second one is a function to be computed (here, <code>Kest</code>) for each simulated pattern, then we add the arguments of the <code>Kest</code> function (here, only <code>correction</code>).</p>
+<pre class="r"><code>plot(envelope(semis_split[[1]], Kest, correction = &quot;iso&quot;))</code></pre>
+<pre><code>## Generating 99 simulations of CSR  ...
+## 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+## 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+## 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98,  99.
+## 
+## Done.</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-11-1.png" width="672" /></p>
+<p>As indicated by the message, by default the function performs 99 simulations of the null model corresponding to complete spatial randomness (CSR).</p>
+<p>The observed curve falls outside the envelope of the 99 simulations near <span class="math inline">\(r = 2\)</span>. We must be careful not to interpret too quickly a result that is outside the envelope. Although there is about a 1% probability of obtaining a more extreme result under the null hypothesis at a given distance, the envelope is calculated for a large number of values of <span class="math inline">\(r\)</span> and is not corrected for multiple comparisons. Thus, a significant difference for a very small range of values of <span class="math inline">\(r\)</span> may be simply due to chance.</p>
+<div id="exercise-1" class="section level3">
+<h3>Exercise 1</h3>
+<p>Looking at the graph of the second point pattern (poplar seedlings), can you predict where Ripley’s <span class="math inline">\(K\)</span> will be in relation to the null hypothesis of complete spatial randomness? Verify your prediction by calculating Ripley’s <span class="math inline">\(K\)</span> for this point pattern in R.</p>
+</div>
+</div>
+<div id="effect-of-heterogeneity" class="section level2">
+<h2>Effect of heterogeneity</h2>
+<p>The graph below illustrates a <em>heterogeneous</em> point pattern, i.e. it shows an density gradient (more points on the left than on the right).</p>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>A density gradient can be confused with an aggregation of points, as can be seen on the graph of the corresponding Ripley’s <span class="math inline">\(K\)</span>. In theory, these are two different processes:</p>
+<ul>
+<li><p>Heterogeneity: The density of points varies in the study area, for example due to the fact that certain local conditions are more favorable to the presence of the species of interest.</p></li>
+<li><p>Aggregation: The mean density of points is homogeneous, but the presence of one point increases the presence of other points in its vicinity, for example due to positive interactions between individuals.</p></li>
+</ul>
+<p>However, it may be difficult to differentiate between the two in practice, especially since some patterns may be both heterogeneous and aggregated.</p>
+<p>Let’s take the example of the poplar seedlings from the previous exercise. The <code>density</code> function applied to a point pattern performs a kernel density estimation of the density of the seedlings across the plot. By default, this function uses a Gaussian kernel with a standard deviation <code>sigma</code> specified in the function, which determines the scale at which density fluctuations are “smoothed”. Here, we use a value of 2 m for <code>sigma</code> and we first represent the estimated density with <code>plot</code>, before overlaying the points (<code>add = TRUE</code> means that the points are added to the existing plot rather than creating a new plot).</p>
+<pre class="r"><code>dens_p &lt;- density(semis_split[[2]], sigma = 2)
+plot(dens_p)
+plot(semis_split[[2]], add = TRUE)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>To measure the aggregation or repulsion of points in a heterogeneous pattern, we must use the inhomogeneous version of the <span class="math inline">\(K\)</span> statistic (<code>Kinhom</code> in <em>spatstat</em>). This statistic is still equal to the mean number of neighbours within a radius <span class="math inline">\(r\)</span> of a point in the pattern, but rather than standardizing this number by the overall intensity of the pattern, it is standardized by the local estimated density. To specify this variable density, we assign <code>dens_p</code> to the <code>lambda</code> argument in <code>Kinhom</code>.</p>
+<pre class="r"><code>plot(Kinhom(semis_split[[2]], lambda = dens_p, correction = &quot;iso&quot;))</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>Taking into account the heterogeneity of the pattern at a scale <code>sigma</code> of 2 m, there seems to be a deficit of neighbours starting at a radius of about 1.5 m. We can now check whether this deviation is significant.</p>
+<p>As before, we use <code>envelope</code> to simulate the <code>Kinhom</code> statistic under the null model. However, the null model here is not a homogeneous Poisson process (CSR). It is instead a heterogeneous Poisson process simulated by the function <code>rpoispp(dens_p)</code>, i.e. the points are independent of each other, but their density is heterogeneous and given by <code>dens_p</code>. The <code>simulate</code> argument of the <code>envelope</code> function specifies the function used for simulations under the null model; this function must have one argument, here <code>x</code>, even if it is not used.</p>
+<p>Finally, in addition to the arguments needed for <code>Kinhom</code>, i.e. <code>lambda</code> and <code>correction</code>, we also specify <code>nsim = 199</code> to perform 199 simulations and <code>nrank = 5</code> to eliminate the 5 most extreme results on each side of the envelope, i.e. the 10 most extreme results out of 199, to achieve an interval containing about 95% of the probability under the null hypothesis.</p>
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+                   nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
+<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<pre class="r"><code>plot(khet_p)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-16-1.png" width="672" /></p>
+<p><em>Note</em>: For a hypothesis test based on simulations of a null hypothesis, the <span class="math inline">\(p\)</span>-value is estimated by <span class="math inline">\((m + 1)/(n + 1)\)</span>, where <span class="math inline">\(n\)</span> is the number of simulations and <span class="math inline">\(m\)</span> is the number of simulations where the value of the statistic is more extreme than that of the observed data. This is why the number of simulations is often chosen to be 99, 199, etc.</p>
+<div id="exercise-2" class="section level3">
+<h3>Exercise 2</h3>
+<p>Repeat the heterogeneous density estimation and <code>Kinhom</code> calculation with a standard deviation <code>sigma</code> of 5 rather than 2. How does the smoothing level for the density estimation influence the conclusions?</p>
+<p>To differentiate between a variation in the density of points from an interaction (aggregation or repulsion) between these points with this type of analysis, it is generally assumed that the two processes operate at different scales. Typically, we can test whether the points are aggregated at a small scale after accounting for a variation in density at a larger scale.</p>
+</div>
+</div>
+<div id="relationship-between-two-point-patterns" class="section level2">
+<h2>Relationship between two point patterns</h2>
+<p>Let’s consider a case where we have two point patterns, for example the position of trees of two species in a plot (orange and green points in the graph below). Each of the two patterns may or may not present an aggregation of points.</p>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Regardless of whether points are aggregated at the species level, we want to determine whether the two species are arranged independently. In other words, does the probability of observing a tree of one species depend on the presence of a tree of the other species at a given distance?</p>
+<p>The bivariate version of Ripley’s <span class="math inline">\(K\)</span> allows us to answer this question. For two patterns noted 1 and 2, the function <span class="math inline">\(K_{12}(r)\)</span> calculates the mean number of points in pattern 2 within a radius <span class="math inline">\(r\)</span> from a point in pattern 1, standardized by the density of pattern 2.</p>
+<p>In theory, this function is symmetrical, so <span class="math inline">\(K_{12}(r) = K_{21}(r)\)</span> and the result would be the same whether the points of pattern 1 or 2 are chosen as “focal” points for the analysis. However, the estimation of the two quantities for an observed pattern may differ, in particular because of edge effects. The variance of <span class="math inline">\(K_{12}\)</span> and <span class="math inline">\(K_{21}\)</span> between simulations of a null model may also differ, so the null hypothesis test may have more or less power depending on the choice of the focal species.</p>
+<p>The choice of an appropriate null model is important here. In order to determine whether there is a significant attraction or repulsion between the two patterns, the position of one of the patterns must be randomly moved relative to that of the other pattern, while keeping the spatial structure of each pattern taken in isolation.</p>
+<p>One way to do this randomization is to shift one of the two patterns horizontally and/or vertically by a random distance. The part of the pattern that “comes out” on one side of the window is attached to the other side. This method is called a toroidal shift, because by connecting the top and bottom as well as the left and right of a rectangular surface, we obtain the shape of a torus (a three-dimensional “donut”).</p>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>The graph above shows a translation of the green pattern to the right, while the orange pattern remains in the same place. The green points in the shaded area are brought back on the other side. Note that while this method generally preserves the structure of each pattern while randomizing their relative position, it can have some drawbacks, such as dividing point clusters that are near the cutoff point.</p>
+<p>Let’s now check whether the position of the two species (birch and poplar) is independent in our plot. The function <code>Kcross</code> calculates the bivariate <span class="math inline">\(K_{ij}\)</span>, we must specify which type of point (mark) is considered as the focal species <span class="math inline">\(i\)</span> and the neighbouring species <span class="math inline">\(j\)</span>.</p>
+<pre class="r"><code>plot(Kcross(semis, i = &quot;P&quot;, j = &quot;B&quot;, correction = &quot;iso&quot;))</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-19-1.png" width="672" /></p>
+<p>Here, the observed <span class="math inline">\(K\)</span> is lower than the theoretical value, indicating a possible repulsion between the two patterns.</p>
+<p>To determine the envelope of the <span class="math inline">\(K\)</span> under the null hypothesis of independence of the two patterns, we must specify that the simulations are based on a translation of the patterns. We indicate that the simulations use the function <code>rshift</code> (random translation) with the argument <code>simulate = function(x) rshift(x, which = "B")</code>; here, the <code>x</code> argument in <code>simulate</code> corresponds to the original point pattern and the <code>which</code> argument indicates which of the patterns is translated. As in the previous case, the arguments needed for <code>Kcross</code>, i.e. <code>i</code>, <code>j</code> and <code>correction</code>, must be repeated in the <code>envelope</code> function.</p>
+<pre class="r"><code>plot(envelope(semis, Kcross, i = &quot;P&quot;, j = &quot;B&quot;, correction = &quot;iso&quot;, 
+              nsim = 199, nrank = 5, simulate = function(x) rshift(x, which = &quot;B&quot;)))</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-20-1.png" width="672" /></p>
+<p>Here, the observed curve is totally within the envelope, so we do not reject the null hypothesis of independence of the two patterns.</p>
+<div id="questions" class="section level3">
+<h3>Questions</h3>
+<ol style="list-style-type: decimal">
+<li><p>What would be one reason for our choice to translate the points of the birch rather than poplar?</p></li>
+<li><p>Would the simulations generated by random translation be a good null model if the two patterns were heterogeneous?</p></li>
+</ol>
+</div>
+</div>
+<div id="patterns-of-points-scored" class="section level2">
+<h2>Patterns of points scored</h2>
+<p>The <a href="data/fir.csv">fir.csv</a> dataset contains the <span class="math inline">\((x, y)\)</span> coordinates of 822 fir trees in a 1 hectare plot and their status (A = alive, D = dead) following a spruce budworm outbreak.</p>
+<pre class="r"><code>fir &lt;- read.csv(&quot;data/fir.csv&quot;)
+head(fir)</code></pre>
+<pre><code>##       x     y status
+## 1 31.50  1.00      A
+## 2 85.25 30.75      D
+## 3 83.50 38.50      A
+## 4 84.00 37.75      A
+## 5 83.00 33.25      A
+## 6 33.25  0.25      A</code></pre>
+<pre class="r"><code>fir &lt;- ppp(x = fir$x, y = fir$y, marks = as.factor(fir$status),
+           window = owin(xrange = c(0, 100), yrange = c(0, 100)))
+plot(fir)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>Suppose that we want to check whether fir mortality is independent or correlated between neighbouring trees. How does this question differ from the previous example, where we wanted to know if the position of the points of two species was independent?</p>
+<p>In the previous example, the independence or interaction between the species referred to the formation of the pattern itself (whether or not seedlings of one species establish near those of the other species). Here, the characteristic of interest (survival) occurs after the establishment of the pattern, assuming that all those trees were alive at first and that some died as a result of the outbreak. So we take the position of the trees as fixed and we want to know whether the distribution of status (dead, alive) among those trees is random or shows a spatial pattern.</p>
+<p>In Wiegand and Moloney’s textbook, the first situation (establishment of seedlings of two species) is called a bivariate pattern, so it is really two interacting patterns, while the second is a single pattern with a qualitative <em>mark</em>. The <em>spatstat</em> package in R does not differentiate between the two in terms of pattern definition (types of points are always represented by the <code>marks</code> argument), but the analysis methods applied to the two questions differ.</p>
+<p>In the case of a pattern with a qualitative mark, we can define a <em>mark connection function</em> <span class="math inline">\(p_{ij}(r)\)</span>. For two points separated by a distance <span class="math inline">\(r\)</span>, this function gives the probability that the first point has the mark <span class="math inline">\(i\)</span> and the second the mark <span class="math inline">\(j\)</span>. Under the null hypothesis where the marks are independent, this probability is equal to the product of the proportions of each mark in the entire pattern, <span class="math inline">\(p_{ij}(r) = p_i p_j\)</span> independently of <span class="math inline">\(r\)</span>.</p>
+<p>In <em>spatstat</em>, the mark connection function is computed with the <code>markconnect</code> function, where the marks <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and the type of edge correction must be specified. In our example, we see that two closely spaced points are less likely to have a different status (A and D) than expected under the assumption of random and independent distribution of marks (red dotted line).</p>
+<pre class="r"><code>plot(markconnect(fir, i = &quot;A&quot;, j = &quot;D&quot;, correction = &quot;iso&quot;))</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>In this graph, the fluctuations in the function are due to the estimation error of a continuous <span class="math inline">\(r\)</span> function from a limited number of discrete point pairs.</p>
+<p>To simulate the null model in this case, we use the <code>rlabel</code> function, which randomly reassigns the marks among the points of the pattern, keeping the points’ positions fixed.</p>
+<pre class="r"><code>plot(envelope(fir, markconnect, i = &quot;A&quot;, j = &quot;D&quot;, correction = &quot;iso&quot;, 
+              nsim = 199, nrank = 5, simulate = rlabel))</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-24-1.png" width="672" /></p>
+<p>Note that since the <code>rlabel</code> function has only one required argument corresponding to the original point pattern, it was not necessary to specify: <code>simulate = function(x) rlabel(x)</code>.</p>
+<p>Here are the results for tree pairs of the same status A or D:</p>
+<pre class="r"><code>par(mfrow = c(1, 2))
+plot(envelope(fir, markconnect, i = &quot;A&quot;, j = &quot;A&quot;, correction = &quot;iso&quot;, 
+              nsim = 199, nrank = 5, simulate = rlabel))</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<pre class="r"><code>plot(envelope(fir, markconnect, i = &quot;D&quot;, j = &quot;D&quot;, correction = &quot;iso&quot;, 
+              nsim = 199, nrank = 5, simulate = rlabel))</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-25-1.png" width="960" /></p>
+<p>It therefore appears that fir mortality due to this outbreak is spatially aggregated, since trees located in close proximity to each other have a greater probability of sharing the same status than predicted by the null hypothesis.</p>
+</div>
+<div id="references" class="section level2">
+<h2>References</h2>
+<p>Fortin, M.-J. and Dale, M.R.T. (2005) <em>Spatial Analysis: A Guide for Ecologists</em>. Cambridge University Press: Cambridge, UK.</p>
+<p>Wiegand, T. and Moloney, K.A. (2013) <em>Handbook of Spatial Point-Pattern Analysis in Ecology</em>, CRC Press.</p>
+<p>The dataset in the last example is a subet of the Lake Duparquet Research and Teaching Forest (LDRTF) data, available on Dryad <a href="https://doi.org/10.5061/dryad.tqjq2bvwz">here</a>.</p>
+</div>
+</div>
+<div id="solutions" class="section level1">
+<h1>Solutions</h1>
+<div id="exercise-1-1" class="section level3">
+<h3>Exercise 1</h3>
+<pre class="r"><code>plot(envelope(semis_split[[2]], Kest, correction = &quot;iso&quot;))</code></pre>
+<pre><code>## Generating 99 simulations of CSR  ...
+## 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+## 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80,
+## 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98,  99.
+## 
+## Done.</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-26-1.png" width="672" /></p>
+<p>Poplar seedlings seem to be significantly aggregated according to the <span class="math inline">\(K\)</span> function.</p>
+</div>
+<div id="exercise-2-1" class="section level3">
+<h3>Exercise 2</h3>
+<pre class="r"><code>dens_p &lt;- density(semis_split[[2]], sigma = 5)
+plot(dens_p)
+plot(semis_split[[2]], add = TRUE)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+                   nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
+<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
+<pre><code>## Generating 199 simulations by evaluating function  ...
+## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
+## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
+## .82.84.86.88.90.92.94.96.98.100.102.104.106.108.110.112.114.116.118.120
+## .122.124.126.128.130.132.134.136.138.140.142.144.146.148.150.152.154.156.158.160
+## .162.164.166.168.170.172.174.176.178.180.182.184.186.188.190.192.194.196.198 199.
+## 
+## Done.</code></pre>
+<pre class="r"><code>plot(khet_p)</code></pre>
+<p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-27-2.png" width="672" /></p>
+<p>Here, as we estimate density variations at a larger scale, even after accounting for this variation, the poplar seedlings seem to be aggregated at a small scale.</p>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

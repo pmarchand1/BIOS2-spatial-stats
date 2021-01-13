@@ -2,7 +2,7 @@
 title: "Spatial statistics in ecology, Part 1"
 author: "Philippe Marchand, Université du Québec en Abitibi-Témiscamingue"
 date: "January 12, 2021"
-output: 
+output:
     html_document:
         self_contained: false
         lib_dir: libs
@@ -225,20 +225,20 @@ plot(dens_p)
 plot(semis_split[[2]], add = TRUE)
 ```
 
-To measure the aggregation or repulsion of points in a heterogeneous pattern, we must use the inhomogeneous version of the $K$ statistic (`Kinhom` in *spatstat*). This statistic is still equal to the mean number of neighbours within a radius $r$ of a point in the pattern, but rather than standardizing this number by the overall intensity of the pattern, it is standardized by the local estimated density. To specify this variable density, we assign `dens_p` to the `lambda` argument in `Kinhom`.
+To measure the aggregation or repulsion of points in a heterogeneous pattern, we must use the inhomogeneous version of the $K$ statistic (`Kinhom` in *spatstat*). This statistic is still equal to the mean number of neighbours within a radius $r$ of a point in the pattern, but rather than standardizing this number by the overall intensity of the pattern, it is standardized by the local estimated density. As above, we specify `sigma = 2` to control the level of smoothing for the varying density estimate.
 
 ```{r}
-plot(Kinhom(semis_split[[2]], lambda = dens_p, correction = "iso"))
+plot(Kinhom(semis_split[[2]], sigma = 2, correction = "iso"))
 ```
 
 Taking into account the heterogeneity of the pattern at a scale `sigma` of 2 m, there seems to be a deficit of neighbours starting at a radius of about 1.5 m. We can now check whether this deviation is significant.
 
 As before, we use `envelope` to simulate the `Kinhom` statistic under the null model. However, the null model here is not a homogeneous Poisson process (CSR). It is instead a heterogeneous Poisson process simulated by the function `rpoispp(dens_p)`, i.e. the points are independent of each other, but their density is heterogeneous and given by `dens_p`. The `simulate` argument of the `envelope` function specifies the function used for simulations under the null model; this function must have one argument, here `x`, even if it is not used.
 
-Finally, in addition to the arguments needed for `Kinhom`, i.e. `lambda` and `correction`, we also specify `nsim = 199` to perform 199 simulations and `nrank = 5` to eliminate the 5 most extreme results on each side of the envelope, i.e. the 10 most extreme results out of 199, to achieve an interval containing about 95% of the probability under the null hypothesis.
+Finally, in addition to the arguments needed for `Kinhom`, i.e. `sigma` and `correction`, we also specify `nsim = 199` to perform 199 simulations and `nrank = 5` to eliminate the 5 most extreme results on each side of the envelope, i.e. the 10 most extreme results out of 199, to achieve an interval containing about 95% of the probability under the null hypothesis.
 
 ```{r}
-khet_p <- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = "iso",
+khet_p <- envelope(semis_split[[2]], Kinhom, sigma = 2,  correction = "iso",
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))
 plot(khet_p)
 ```
@@ -388,7 +388,7 @@ dens_p <- density(semis_split[[2]], sigma = 5)
 plot(dens_p)
 plot(semis_split[[2]], add = TRUE)
 
-khet_p <- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = "iso",
+khet_p <- envelope(semis_split[[2]], Kinhom, sigma = 5, correction = "iso",
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))
 plot(khet_p)
 ```

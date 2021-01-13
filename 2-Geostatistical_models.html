@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philippe Marchand, Université du Québec en Abitibi-Témiscamingue" />
+
+<meta name="date" content="2021-01-14" />
+
+<title>Spatial statistics in ecology, Part 2</title>
+
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="libs/navigation-1.1/tabsets.js"></script>
+<link href="libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Spatial statistics in ecology, Part 2</h1>
+<h4 class="author">Philippe Marchand, Université du Québec en Abitibi-Témiscamingue</h4>
+<h4 class="date">January 14, 2021</h4>
+
+</div>
+
+
+<div id="spatial-correlation-of-a-variable" class="section level1">
+<h1>Spatial correlation of a variable</h1>
+<p>Correlation between measurements of a variable taken at nearby points often occurs in environmental data. This principle is sometimes referred to as the “first law of geography” and is expressed in the following quote from Waldo Tobler: “Everything is related to everything else, but near things are more related than distant things”.</p>
+<p>In statistics, we often refer to <em>autocorrelation</em> as the correlation between measurements of the same variable taken at different times (temporal autocorrelation) or places (spatial autocorrelation).</p>
+<div id="intrinsic-or-induced-dependence" class="section level2">
+<h2>Intrinsic or induced dependence</h2>
+<p>There are two basic types of spatial dependence on a measured variable <span class="math inline">\(y\)</span>: an <em>intrinsic</em> dependence on <span class="math inline">\(y\)</span>, or a dependence <em>induced</em> by external variables influencing <span class="math inline">\(y\)</span>, which are themselves spatially correlated.</p>
+<p>For example, suppose that the abundance of a species is correlated between two sites located near each other:</p>
+<ul>
+<li><p>this spatial dependence can be induced if it is due to a spatial correlation of habitat factors that are favorable or unfavorable to the species;</p></li>
+<li><p>or it can be intrinsic if it is due to the dispersion of individuals to nearby sites.</p></li>
+</ul>
+<p>In many cases, both types of dependence affect a given variable.</p>
+<p>If the dependence is simply induced and the external variables that cause it are included in the model explaining <span class="math inline">\(y\)</span>, then the model residuals will be independent and we can use all the methods already seen that ignore spatial correlation.</p>
+<p>However, if the dependence is intrinsic or due to unmeasured external factors, then the spatial correlation of the residuals in the model will have to be taken into account.</p>
+</div>
+<div id="different-ways-to-model-spatial-effects" class="section level2">
+<h2>Different ways to model spatial effects</h2>
+<p>In this training, we will directly model the spatial correlations of our data. It is useful to compare this approach to other ways of including spatial aspects in a statistical model.</p>
+<p>First, we could include predictors in the model that represent position (e.g., longitude, latitude). Such predictors may be useful for detecting a systematic large-scale trend or gradient, whether or not the trend is linear (e.g., with a generalized additive model).</p>
+<p>In contrast to this approach, the models we will see now serve to model a spatial correlation in the random fluctuations of a variable (i.e., in the residuals after removing any systematic effect).</p>
+<p>Mixed models use random effects to represent the non-independence of data on the basis of their grouping, i.e., after accounting for systematic fixed effects, data from the same group are more similar (their residual variation is correlated) than data from different groups. These groups were sometimes defined according to spatial criteria (observations grouped into sites).</p>
+<p>However, in the context of a random group effect, all groups are as different from each other, e.g., two sites within 100 km of each other are no more or less similar than two sites 2 km apart.</p>
+<p>The methods we will see here and in the next parts of the training therefore allow us to model non-independence on a continuous scale (closer = more correlated) rather than just discrete (hierarchy of groups).</p>
+</div>
+</div>
+<div id="geostatistical-models" class="section level1">
+<h1>Geostatistical models</h1>
+<p>Geostatistics refers to a group of techniques that originated in the earth sciences. Geostatistics is concerned with variables that are continuously distributed in space and where a number of points are sampled to estimate this distribution. A classic example of these techniques comes from the mining field, where the aim was to create a map of the concentration of ore at a site from samples taken at different points on the site.</p>
+<p>For these models, we will assume that <span class="math inline">\(z(x, y)\)</span> is a stationary spatial variable measured at points with coordinates <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+<div id="variogram" class="section level2">
+<h2>Variogram</h2>
+<p>A central aspect of geostatistics is the estimation of the variogram <span class="math inline">\(\gamma_z\)</span> . The variogram is equal to half the mean square difference between the values of <span class="math inline">\(z\)</span> for two points <span class="math inline">\((x_i, y_i)\)</span> and <span class="math inline">\((x_j, y_j)\)</span> separated by a distance <span class="math inline">\(h\)</span>.</p>
+<p><span class="math display">\[\gamma_z(h) = \frac{1}{2} \text{E} \left[ \left( z(x_i, y_i) - z(x_j, y_j) \right)^2 \right]_{d_{ij} = h}\]</span></p>
+<p>In this equation, the <span class="math inline">\(\text{E}\)</span> function with the index <span class="math inline">\(d_{ij}=h\)</span> designates the statistical expectation (i.e., the mean) of the squared deviation between the values of <span class="math inline">\(z\)</span> for points separated by a distance <span class="math inline">\(h\)</span>.</p>
+<p>If we want instead to express the autocorrelation <span class="math inline">\(\rho_z(h)\)</span> between measures of <span class="math inline">\(z\)</span> separated by a distance <span class="math inline">\(h\)</span>, it is related to the variogram by the equation:</p>
+<p><span class="math display">\[\gamma_z = \sigma_z^2(1 - \rho_z)\]</span> ,</p>
+<p>where <span class="math inline">\(\sigma_z^2\)</span> is the global variance of <span class="math inline">\(z\)</span>.</p>
+<p>Note that <span class="math inline">\(\gamma_z = \sigma_z^2\)</span> when we reach a distance where the measurements of <span class="math inline">\(z\)</span> are independent, so <span class="math inline">\(\rho_z = 0\)</span>. In this case, we can see that <span class="math inline">\(\gamma_z\)</span> is similar to a variance, although it is sometimes called “semivariogram” or “semivariance” because of the 1/2 factor in the above equation.</p>
+</div>
+<div id="theoretical-models-for-the-variogram" class="section level2">
+<h2>Theoretical models for the variogram</h2>
+<p>Several parametric models have been proposed to represent the spatial correlation as a function of the distance between sampling points. Let us first consider a correlation that decreases exponentially:</p>
+<p><span class="math display">\[\rho_z(h) = e^{-h/r}\]</span></p>
+<p>Here, <span class="math inline">\(\rho_z = 1\)</span> for <span class="math inline">\(h = 0\)</span> and the correlation is multiplied by <span class="math inline">\(1/e \approx 0.37\)</span> each time the distance increases by <span class="math inline">\(r\)</span>. In this context, <span class="math inline">\(r\)</span> is called the <em>range</em> of the correlation.</p>
+<p>From the above equation, we can calculate the corresponding variogram.</p>
+<p><span class="math display">\[\gamma_z(h) = \sigma_z^2 (1 - e^{-h/r})\]</span></p>
+<p>Here is a graphical representation of this variogram.</p>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-1-1.png" width="672" /></p>
+<p>Because of the exponential function, the value of <span class="math inline">\(\gamma\)</span> at large distances approaches the global variance <span class="math inline">\(\sigma_z^2\)</span> without exactly reaching it. This asymptote is called a <em>sill</em> in the geostatistical context and is represented by the symbol <span class="math inline">\(s\)</span>.</p>
+<p>Finally, it is sometimes unrealistic to assume a perfect correlation when the distance tends towards 0, because of a possible variation of <span class="math inline">\(z\)</span> at a very small scale. A <em>nugget</em> effect, denoted <span class="math inline">\(n\)</span>, can be added to the model so that <span class="math inline">\(\gamma\)</span> approaches <span class="math inline">\(n\)</span> (rather than 0) if <span class="math inline">\(h\)</span> tends towards 0. The term nugget comes from the mining origin of these techniques, where a nugget could be the source of a sudden small-scale variation in the concentration of a mineral.</p>
+<p>By adding the nugget effect, the remainder of the variogram is “compressed” to keep the same sill, resulting in the following equation.</p>
+<p><span class="math display">\[\gamma_z(h) = n + (s - n) (1 - e^{-h/r})\]</span></p>
+<p>In the <em>gstat</em> package that we use below, the term <span class="math inline">\((s-n)\)</span> is called a <em>partial sill</em> or <code>psill</code> for the exponential portion of the variogram.</p>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>In addition to the exponential model, two other common theoretical models for the variogram are the Gaussian model (where the correlation follows a half-normal curve), and the spherical model (where the variogram increases linearly at the start and then curves and reaches the plateau at a distance equal to its range <span class="math inline">\(r\)</span>). The spherical model thus allows the correlation to be exactly 0 at large distances, rather than gradually approaching zero in the case of the other models.</p>
+<table>
+<colgroup>
+<col width="22%" />
+<col width="35%" />
+<col width="41%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Model</th>
+<th><span class="math inline">\(\rho(h)\)</span></th>
+<th><span class="math inline">\(\gamma(h)\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Exponential</td>
+<td><span class="math inline">\(\exp\left(-\frac{h}{r}\right)\)</span></td>
+<td><span class="math inline">\(s \left(1 - \exp\left(-\frac{h}{r}\right)\right)\)</span></td>
+</tr>
+<tr class="even">
+<td>Gaussian</td>
+<td><span class="math inline">\(\exp\left(-\frac{h^2}{r^2}\right)\)</span></td>
+<td><span class="math inline">\(s \left(1 - \exp\left(-\frac{h^2}{r^2}\right)\right)\)</span></td>
+</tr>
+<tr class="odd">
+<td>Spherical <span class="math inline">\((h &lt; r)\)</span> *</td>
+<td><span class="math inline">\(1 - \frac{3}{2}\frac{h}{r} + \frac{1}{2}\frac{h^3}{r^3}\)</span></td>
+<td><span class="math inline">\(s \left(\frac{3}{2}\frac{h}{r} - \frac{1}{2}\frac{h^3}{r^3} \right)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>* For the spherical model, <span class="math inline">\(\rho = 0\)</span> and <span class="math inline">\(\gamma = s\)</span> if <span class="math inline">\(h \ge r\)</span>.</p>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-3-1.png" width="864" /></p>
+</div>
+<div id="empirical-variogram" class="section level2">
+<h2>Empirical variogram</h2>
+<p>To estimate <span class="math inline">\(\gamma_z(h)\)</span> from empirical data, we need to define distance classes, thus grouping different distances within a margin of <span class="math inline">\(\pm \delta\)</span> around a distance <span class="math inline">\(h\)</span>, then calculating the mean square deviation for the pairs of points in that distance class.</p>
+<p><span class="math display">\[\hat{\gamma_z}(h) = \frac{1}{2 N_{\text{paires}}} \sum \left[ \left( z(x_i, y_i) - z(x_j, y_j) \right)^2 \right]_{d_{ij} = h \pm \delta}\]</span></p>
+<p>We will see in the next section how to estimate a variogram in R.</p>
+</div>
+<div id="regression-model-with-spatial-correlation" class="section level2">
+<h2>Regression model with spatial correlation</h2>
+<p>The following equation represents a multiple linear regression including residual spatial correlation:</p>
+<p><span class="math display">\[v = \beta_0 + \sum_i \beta_i u_i + z + \epsilon\]</span></p>
+<p>Here, <span class="math inline">\(v\)</span> designates the response variable and <span class="math inline">\(u\)</span> the predictors, to avoid confusion with the spatial coordinates <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span>.</p>
+<p>In addition to the residual <span class="math inline">\(\epsilon\)</span> that is independent between observations, the model includes a term <span class="math inline">\(z\)</span> that represents the spatially correlated portion of the residual variance.</p>
+<p>Here are suggested steps to apply this type of model:</p>
+<ol style="list-style-type: decimal">
+<li><p>Fit the regression model without spatial correlation.</p></li>
+<li><p>Verify the presence of spatial correlation from the empirical variogram of the residuals.</p></li>
+<li><p>Fit one or more regression models with spatial correlation and select the one that shows the best fit to the data.</p></li>
+</ol>
+</div>
+</div>
+<div id="geostatistical-models-in-r" class="section level1">
+<h1>Geostatistical models in R</h1>
+<p>The <em>gstat</em> package contains functions related to geostatistics. For this example, we will use the <code>oxford</code> dataset from this package, which contains measurements of physical and chemical properties for 126 soil samples from a site, along with their coordinates <code>XCOORD</code> and <code>YCOORD</code>.</p>
+<pre class="r"><code>library(gstat)
+
+data(oxford)
+str(oxford)</code></pre>
+<pre><code>## &#39;data.frame&#39;:    126 obs. of  22 variables:
+##  $ PROFILE  : num  1 2 3 4 5 6 7 8 9 10 ...
+##  $ XCOORD   : num  100 100 100 100 100 100 100 100 100 100 ...
+##  $ YCOORD   : num  2100 2000 1900 1800 1700 1600 1500 1400 1300 1200 ...
+##  $ ELEV     : num  598 597 610 615 610 595 580 590 598 588 ...
+##  $ PROFCLASS: Factor w/ 3 levels &quot;Cr&quot;,&quot;Ct&quot;,&quot;Ia&quot;: 2 2 2 3 3 2 3 2 3 3 ...
+##  $ MAPCLASS : Factor w/ 3 levels &quot;Cr&quot;,&quot;Ct&quot;,&quot;Ia&quot;: 2 3 3 3 3 2 2 3 3 3 ...
+##  $ VAL1     : num  3 3 4 4 3 3 4 4 4 3 ...
+##  $ CHR1     : num  3 3 3 3 3 2 2 3 3 3 ...
+##  $ LIME1    : num  4 4 4 4 4 0 2 1 0 4 ...
+##  $ VAL2     : num  4 4 5 8 8 4 8 4 8 8 ...
+##  $ CHR2     : num  4 4 4 2 2 4 2 4 2 2 ...
+##  $ LIME2    : num  4 4 4 5 5 4 5 4 5 5 ...
+##  $ DEPTHCM  : num  61 91 46 20 20 91 30 61 38 25 ...
+##  $ DEP2LIME : num  20 20 20 20 20 20 20 20 40 20 ...
+##  $ PCLAY1   : num  15 25 20 20 18 25 25 35 35 12 ...
+##  $ PCLAY2   : num  10 10 20 10 10 20 10 20 10 10 ...
+##  $ MG1      : num  63 58 55 60 88 168 99 59 233 87 ...
+##  $ OM1      : num  5.7 5.6 5.8 6.2 8.4 6.4 7.1 3.8 5 9.2 ...
+##  $ CEC1     : num  20 22 17 23 27 27 21 14 27 20 ...
+##  $ PH1      : num  7.7 7.7 7.5 7.6 7.6 7 7.5 7.6 6.6 7.5 ...
+##  $ PHOS1    : num  13 9.2 10.5 8.8 13 9.3 10 9 15 12.6 ...
+##  $ POT1     : num  196 157 115 172 238 164 312 184 123 282 ...</code></pre>
+<p>Suppose that we want to model the magnesium concentration (<code>MG1</code>), represented as a function of the spatial position in the following graph.</p>
+<pre class="r"><code>library(ggplot2)
+ggplot(oxford, aes(x = YCOORD, y = XCOORD, size = MG1)) +
+    geom_point() +
+    coord_fixed()</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>Note that the <span class="math inline">\(x\)</span> and <span class="math inline">\(y\)</span> axes have been inverted to save space. The <code>coord_fixed()</code> function of <em>ggplot2</em> ensures that the scale is the same on both axes, which is useful for representing spatial data.</p>
+<p>We can immediately see that these measurements were taken on a 100 m grid. It seems that the magnesium concentration is spatially correlated, although it may be a correlation induced by another variable. In particular, we know that the concentration of magnesium is negatively related to the soil pH (<code>PH1</code>).</p>
+<pre class="r"><code>ggplot(oxford, aes(x = PH1, y = MG1)) +
+    geom_point()</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>The <code>variogram</code> function of <em>gstat</em> is used to estimate a variogram from empirical data. Here is the result obtained for the variable <code>MG1</code>.</p>
+<pre class="r"><code>var_mg &lt;- variogram(MG1 ~ 1, locations = ~ XCOORD + YCOORD, data = oxford)
+var_mg</code></pre>
+<pre><code>##     np     dist    gamma dir.hor dir.ver   id
+## 1  225 100.0000 1601.404       0       0 var1
+## 2  200 141.4214 1950.805       0       0 var1
+## 3  548 215.0773 2171.231       0       0 var1
+## 4  623 303.6283 2422.245       0       0 var1
+## 5  258 360.5551 2704.366       0       0 var1
+## 6  144 400.0000 2948.774       0       0 var1
+## 7  570 427.5569 2994.621       0       0 var1
+## 8  291 500.0000 3402.058       0       0 var1
+## 9  366 522.8801 3844.165       0       0 var1
+## 10 200 577.1759 3603.060       0       0 var1
+## 11 458 619.8400 3816.595       0       0 var1
+## 12  90 670.8204 3345.739       0       0 var1</code></pre>
+<p>The formula <code>MG1 ~ 1</code> indicates that no linear predictor is included in this model, while the argument <code>locations</code> indicates which variables in the data frame correspond to the spatial coordinates.</p>
+<p>In the resulting table, <code>gamma</code> is the value of the variogram for the distance class centered on <code>dist</code>, while <code>np</code> is the number of pairs of points in that class. Here, since the points are located on a grid, we obtain regular distance classes (e.g.: 100 m for neighboring points on the grid, 141 m for diagonal neighbors, etc.).</p>
+<p>Here, we limit ourselves to the estimation of isotropic variograms, i.e. the variogram depends only on the distance between the two points and not on the direction. Although we do not have time to see it today, it is possible with <em>gstat</em> to estimate the variogram separately in different directions.</p>
+<p>We can illustrate the variogram with <code>plot</code>.</p>
+<pre class="r"><code>plot(var_mg, col = &quot;black&quot;)</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>If we want to estimate the residual spatial correlation of <code>MG1</code> after including the effect of <code>PH1</code>, we can add that predictor to the formula.</p>
+<pre class="r"><code>var_mg &lt;- variogram(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford)
+plot(var_mg, col = &quot;black&quot;)</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Including the effect of pH, the range of the spatial correlation seems to decrease, while the plateau is reached around 300 m. It even seems that the variogram decreases beyond 400 m. In general, we assume that the variance between two points does not decrease with distance, unless there is a periodic spatial pattern.</p>
+<p>The function <code>fit.variogram</code> accepts as arguments a variogram estimated from the data, as well as a theoretical model described in a <code>vgm</code> function, and then estimates the parameters of that model according to the data. The fitting is done by the method of least squares.</p>
+<p>For example, <code>vgm("Exp")</code> means we want to fit an exponential model.</p>
+<pre class="r"><code>vfit &lt;- fit.variogram(var_mg, vgm(&quot;Exp&quot;))
+vfit</code></pre>
+<pre><code>##   model    psill    range
+## 1   Nug    0.000  0.00000
+## 2   Exp 1951.496 95.11235</code></pre>
+<p>There is no nugget effect, because <code>psill = 0</code> for the <code>Nug</code> (nugget) part of the model. The exponential part has a sill at 1951 and a range of 95 m.</p>
+<p>To compare different models, a vector of model names can be given to <code>vgm</code>. In the following example, we include the exponential, gaussian (“Gau”) and spherical (“Sph”) models.</p>
+<pre class="r"><code>vfit &lt;- fit.variogram(var_mg, vgm(c(&quot;Exp&quot;, &quot;Gau&quot;, &quot;Sph&quot;)))
+vfit</code></pre>
+<pre><code>##   model    psill    range
+## 1   Nug    0.000  0.00000
+## 2   Exp 1951.496 95.11235</code></pre>
+<p>The function gives us the result of the model with the best fit (lowest sum of squared deviations), which here is the same exponential model.</p>
+<p>Finally, we can superimpose the theoretical model and the empirical variogram on the same graph.</p>
+<pre class="r"><code>plot(var_mg, vfit, col = &quot;black&quot;)</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-12-1.png" width="672" /></p>
+<div id="regression-with-spatial-correlation" class="section level2">
+<h2>Regression with spatial correlation</h2>
+<p>We have seen above that the <em>gstat</em> package allows us to estimate the variogram of the residuals of a linear model. In our example, the magnesium concentration was modeled as a function of pH, with spatially correlated residuals.</p>
+<p>Another tool to fit this same type of model is the <code>gls</code> function of the <em>nlme</em> package, which is included with the installation of R.</p>
+<p>This function applies the <em>generalized least squares</em> method to fit linear regression models when the residuals are not independent or when the residual variance is not the same for all observations. Since the estimates of the coefficients depend on the estimated correlations between the residuals and the residuals themselves depend on the coefficients, the model is fitted by an iterative algorithm:</p>
+<ol style="list-style-type: decimal">
+<li><p>A classical linear regression model (without correlation) is fitted to obtain residuals.</p></li>
+<li><p>The spatial correlation model (variogram) is fitted with those residuals.</p></li>
+<li><p>The regression coefficients are re-estimated, now taking into account the correlations.</p></li>
+</ol>
+<p>Steps 2 and 3 are repeated until the estimates are stable at a desired precision.</p>
+<p>Here is the application of this method to the same model for the magnesium concentration in the <code>oxford</code> dataset. In the <code>correlation</code> argument of <code>gls</code>, we specify an exponential correlation model as a function of our spatial coordinates and we include a possible nugget effect.</p>
+<p>In addition to the exponential correlation <code>corExp</code>, the <code>gls</code> function can also estimate a Gaussian (<code>corGaus</code>) or spherical (<code>corSpher</code>) model.</p>
+<pre class="r"><code>library(nlme)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;nlme&#39;</code></pre>
+<pre><code>## The following object is masked from &#39;package:dplyr&#39;:
+## 
+##     collapse</code></pre>
+<pre class="r"><code>gls_mg &lt;- gls(MG1 ~ PH1, oxford, 
+              correlation = corExp(form = ~ XCOORD + YCOORD, nugget = TRUE))
+summary(gls_mg)</code></pre>
+<pre><code>## Generalized least squares fit by REML
+##   Model: MG1 ~ PH1 
+##   Data: oxford 
+##       AIC      BIC   logLik
+##   1278.65 1292.751 -634.325
+## 
+## Correlation Structure: Exponential spatial correlation
+##  Formula: ~XCOORD + YCOORD 
+##  Parameter estimate(s):
+##       range      nugget 
+## 478.0322964   0.2944753 
+## 
+## Coefficients:
+##                Value Std.Error   t-value p-value
+## (Intercept) 391.1387  50.42343  7.757084       0
+## PH1         -41.0836   6.15662 -6.673079       0
+## 
+##  Correlation: 
+##     (Intr)
+## PH1 -0.891
+## 
+## Standardized residuals:
+##        Min         Q1        Med         Q3        Max 
+## -2.1846957 -0.6684520 -0.3687813  0.4627580  3.1918604 
+## 
+## Residual standard error: 53.8233 
+## Degrees of freedom: 126 total; 124 residual</code></pre>
+<p>To compare this result with the adjusted variogram above, the parameters given by <code>gls</code> must be transformed. The range has the same meaning in both cases and corresponds to 478 m for the result of <code>gls</code>. The global variance of the residuals is the square of <code>Residual standard error</code>. The nugget effect here (0.294) is expressed as a fraction of that variance. Finally, to obtain the partial sill of the exponential part, the nugget effect must be subtracted from the total variance.</p>
+<p>After performing these calculations, we can give these parameters to the <code>vgm</code> function of <em>gstat</em> to superimpose this variogram estimated by <code>gls</code> on our variogram of the residuals of the classical linear model.</p>
+<pre class="r"><code>gls_range &lt;- 478
+gls_var &lt;- 53.823^2
+gls_nugget &lt;- 0.294 * gls_var
+gls_psill &lt;- gls_var - gls_nugget
+
+plot(var_mg, vgm(&quot;Exp&quot;, psill = gls_psill, range = gls_range, nugget = gls_nugget),
+     col = &quot;black&quot;, ylim = c(0, 4000))</code></pre>
+<p><img src="2-Geostatistical_models_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<p>Does the model fit the data less well here? In fact, this empirical variogram represented by the points was obtained from the residuals of the linear model ignoring the spatial correlation, so it is a biased estimate of the actual spatial correlations. The method is still adequate to quickly check if spatial correlations are present. However, to simultaneously fit the regression coefficients and the spatial correlation parameters, the generalized least squares (GLS) approach is preferable and will produce more accurate estimates.</p>
+<p>Finally, note that the result of the <code>gls</code> model also gives the AIC, which we can use to compare the fit of different models (with different predictors or different forms of spatial correlation).</p>
+</div>
+<div id="exercise" class="section level2">
+<h2>Exercise</h2>
+<p>The <a href="data/bryo_belg.csv">bryo_belg.csv</a> dataset is adapted from the data of this study:</p>
+<blockquote>
+<p>Neyens, T., Diggle, P.J., Faes, C., Beenaerts, N., Artois, T. et Giorgi, E. (2019) Mapping species richness using opportunistic samples: a case study on ground-floor bryophyte species richness in the Belgian province of Limburg. <em>Scientific Reports</em> 9, 19122. <a href="https://doi.org/10.1038/s41598-019-55593-x" class="uri">https://doi.org/10.1038/s41598-019-55593-x</a></p>
+</blockquote>
+<p>This data frame shows the specific richness of ground bryophytes (<em>richness</em>) for different sampling points in the Belgian province of Limburg, with their position <em>(x, y)</em> in km, in addition to information on the proportion of forest (<em>forest</em>) and wetlands (<em>wetland</em>) in a 1 km^2$ cell containing the sampling point.</p>
+<pre class="r"><code>bryo_belg &lt;- read.csv(&quot;data/bryo_belg.csv&quot;)
+head(bryo_belg)</code></pre>
+<pre><code>##   richness    forest   wetland        x        y
+## 1        9 0.2556721 0.5036614 228.9516 220.8869
+## 2        6 0.6449114 0.1172068 227.6714 219.8613
+## 3        5 0.5039905 0.6327003 228.8252 220.1073
+## 4        3 0.5987329 0.2432942 229.2775 218.9035
+## 5        2 0.7600775 0.1163538 209.2435 215.2414
+## 6       10 0.6865434 0.0000000 210.4142 216.5579</code></pre>
+<p>For this exercise, we will use the square root of the specific richness as the response variable. The square root transformation often allows to homogenize the variance of the count data in order to apply a linear regression.</p>
+<ol style="list-style-type: lower-alpha">
+<li><p>Fit a linear model of the transformed species richness to the proportion of forest and wetlands, without taking into account spatial correlations. What is the effect of the two predictors in this model?</p></li>
+<li><p>Calculate the empirical variogram of the model residuals in (a). Does there appear to be a spatial correlation between the points?</p></li>
+</ol>
+<p><em>Note</em>: The <code>cutoff</code> argument to the <code>variogram</code> function specifies the maximum distance at which the variogram is calculated. You can manually adjust this value to get a good view of the sill.</p>
+<ol start="3" style="list-style-type: lower-alpha">
+<li><p>Re-fit the linear model in (a) with the <code>gls</code> function in the <em>nlme</em> package, trying different types of spatial correlations (exponential, Gaussian, spherical). Compare the models (including the one without spatial correlation) with the AIC.</p></li>
+<li><p>What is the effect of the proportion of forests and wetlands according to the model in (c)? Explain the differences between the conclusions of this model and the model in (a).</p></li>
+</ol>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

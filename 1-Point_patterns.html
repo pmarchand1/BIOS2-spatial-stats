@@ -395,15 +395,14 @@ plot(k)</code></pre>
 plot(dens_p)
 plot(semis_split[[2]], add = TRUE)</code></pre>
 <p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<p>To measure the aggregation or repulsion of points in a heterogeneous pattern, we must use the inhomogeneous version of the <span class="math inline">\(K\)</span> statistic (<code>Kinhom</code> in <em>spatstat</em>). This statistic is still equal to the mean number of neighbours within a radius <span class="math inline">\(r\)</span> of a point in the pattern, but rather than standardizing this number by the overall intensity of the pattern, it is standardized by the local estimated density. To specify this variable density, we assign <code>dens_p</code> to the <code>lambda</code> argument in <code>Kinhom</code>.</p>
-<pre class="r"><code>plot(Kinhom(semis_split[[2]], lambda = dens_p, correction = &quot;iso&quot;))</code></pre>
+<p>To measure the aggregation or repulsion of points in a heterogeneous pattern, we must use the inhomogeneous version of the <span class="math inline">\(K\)</span> statistic (<code>Kinhom</code> in <em>spatstat</em>). This statistic is still equal to the mean number of neighbours within a radius <span class="math inline">\(r\)</span> of a point in the pattern, but rather than standardizing this number by the overall intensity of the pattern, it is standardized by the local estimated density. As above, we specify <code>sigma = 2</code> to control the level of smoothing for the varying density estimate.</p>
+<pre class="r"><code>plot(Kinhom(semis_split[[2]], sigma = 2, correction = &quot;iso&quot;))</code></pre>
 <p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>Taking into account the heterogeneity of the pattern at a scale <code>sigma</code> of 2 m, there seems to be a deficit of neighbours starting at a radius of about 1.5 m. We can now check whether this deviation is significant.</p>
 <p>As before, we use <code>envelope</code> to simulate the <code>Kinhom</code> statistic under the null model. However, the null model here is not a homogeneous Poisson process (CSR). It is instead a heterogeneous Poisson process simulated by the function <code>rpoispp(dens_p)</code>, i.e. the points are independent of each other, but their density is heterogeneous and given by <code>dens_p</code>. The <code>simulate</code> argument of the <code>envelope</code> function specifies the function used for simulations under the null model; this function must have one argument, here <code>x</code>, even if it is not used.</p>
-<p>Finally, in addition to the arguments needed for <code>Kinhom</code>, i.e. <code>lambda</code> and <code>correction</code>, we also specify <code>nsim = 199</code> to perform 199 simulations and <code>nrank = 5</code> to eliminate the 5 most extreme results on each side of the envelope, i.e. the 10 most extreme results out of 199, to achieve an interval containing about 95% of the probability under the null hypothesis.</p>
-<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+<p>Finally, in addition to the arguments needed for <code>Kinhom</code>, i.e. <code>sigma</code> and <code>correction</code>, we also specify <code>nsim = 199</code> to perform 199 simulations and <code>nrank = 5</code> to eliminate the 5 most extreme results on each side of the envelope, i.e. the 10 most extreme results out of 199, to achieve an interval containing about 95% of the probability under the null hypothesis.</p>
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, sigma = 2,  correction = &quot;iso&quot;,
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
-<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
 <pre><code>## Generating 199 simulations by evaluating function  ...
 ## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
 ## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
@@ -546,9 +545,8 @@ plot(envelope(fir, markconnect, i = &quot;A&quot;, j = &quot;A&quot;, correction
 plot(dens_p)
 plot(semis_split[[2]], add = TRUE)</code></pre>
 <p><img src="1-Point_patterns_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
-<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, sigma = 5, correction = &quot;iso&quot;,
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
-<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
 <pre><code>## Generating 199 simulations by evaluating function  ...
 ## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
 ## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80

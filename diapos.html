@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Spatial statistics in ecology</title>
+    <meta charset="utf-8" />
+    <link href="libs/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis.css" rel="stylesheet" />
+    <link href="libs/remark-css-0.0.1/metropolis-fonts.css" rel="stylesheet" />
+    <link rel="stylesheet" href="styles-xar8202.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# Spatial statistics in ecology
+
+---
+
+
+
+
+
+# Contents
+
+- Part 1: Point pattern analysis
+
+- Part 2: Geostatistical models
+
+- Part 3: Areal data models
+
+- Part 4: TBD (more examples, tools for more complex models with spatial dependence, e.g., INLA)
+
+---
+
+# Point pattern analysis
+
+- Point data: position of individuals or events in space.
+
+--
+
+- Determine whether points are randomly arranged or clustered; determine whether two types of points are arranged independently or not.
+
+--
+
+- Requires a complete census in a study area.
+
+---
+
+# Geostatistical models
+
+- Point data: sampling points and associated measurements.
+
+--
+
+- Autocorrelation models of measurements as a function of distance between points.  
+
+--
+
+- Spatial smoothing of data and predictions for new points.
+
+---
+
+# Areal data models
+
+- Measurements taken on regions of space. 
+
+--
+
+- Neighbourhood relationships between regions (network or grid).
+
+--
+
+- Models including autocorrelation between neighbouring regions.
+
+---
+
+# Stationarity
+
+- Summary statistics (mean, variance and correlations between measures of a variable) do not vary with translation in space.
+
+--
+
+- Lack of a large-scale trend (gradient).
+
+--
+
+- For point patterns, there is no large-scale trend in the density of points; also called homogeneity.
+
+---
+
+# Isotropy
+
+- Spatial correlations depend only on the distance between measurements, not on the direction. 
+
+--
+
+- Summary statistics do not vary with rotation.
+
+---
+
+# Georeferenced data
+
+- Use of geospatial data sources (e.g. climate, remote sensing) is increasingly common in environmental sciences. 
+
+--
+
+- Processing this data requires concepts related to geographic information systems (GIS); not covered in this course. 
+
+--
+
+- Geospatial data is often used as a predictor to explain a response at different sites. The use of spatial statistics is only necessary when there is spatial correlation of residuals.
+
+---
+
+class: inverse, center, middle
+
+# Point pattern analysis
+
+---
+
+# Point process
+
+- A point pattern describes the spatial position (most often in 2D) of individuals or events, represented by points, in a given study area (spatial window).
+
+--
+
+- Each point is assumed to have negligible spatial extent.
+
+--
+
+- A point process is a statistical model that can be used to simulate point patterns or explain an observed point pattern.
+
+---
+
+# Complete spatial randomness (CSR)
+
+- The simplest null model for a point pattern.
+
+--
+
+- The presence of a point at a given position is independent of the presence of points in a neighbourhood.
+
+--
+
+- Homogeneous Poisson process: the number of points in a region `\(A\)` is given by `\(N(A) \sim \text{Pois}(\lambda A)\)` where `\(\lambda\)` is the *intensity* of the process. `\(N\)` is independent between two disjoint regions.
+
+---
+
+# Example
+
+- Which of the three patterns shows complete spatial randomness?
+
+
+
+![](diapos_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+
+---
+
+# Example
+
+![](diapos_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+---
+
+# Summary statistics of point patterns
+
+- Intensity `\(\lambda\)`: first-order statistic, density of points in the pattern. For a heterogeneous pattern, `\(\lambda(x, y)\)` depends on position.
+
+--
+
+- Second-order statistics: describe how the presence of points depend on the presence of other points, e.g. Ripley's `\(K\)`.
+
+--
+
+- Distribution of these statistics rarely known, even for simple null models. Hypothesis tests proceed by simulating from null model.
+
+---
+
+# Ripley's `\(K\)` function
+
+- `\(K(r)\)` is the mean number of points within a circle of radius `\(r\)` from a point in the pattern, standardized by the intensity `\(\lambda\)`.
+
+--
+
+- For the CSR null model, mean number of points is `\(\lambda \pi r^2\)` for any circle of radius `\(r\)`, thus in theory `\(K(r) = \pi r^2\)`.
+
+--
+
+- Estimating `\(K(r)\)` from a given point pattern:
+
+`$$K(r) = \frac{A}{n(n-1)} \sum_i \sum_{j &gt; i} I \left( d_{ij} \le r \right) w_{ij}$$`
+
+---
+
+# Example
+
+
+
+![](diapos_files/figure-html/unnamed-chunk-5-1.png)&lt;!-- --&gt;
+
+![](diapos_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;
+
+---
+
+# Edge effects
+
+- Incomplete knowledge of neighbourhood for points near the edge of the observation window.
+
+--
+
+- Ripley's edge correction: contribution of neighbour `\(j\)` at a distance `\(r\)` from point `\(i\)` receives a weight `\(w_{ij} = 1/\phi_i(r)\)`.
+
+--
+
+- `\(\phi_i(r)\)` is the fraction of the circle of radius `\(r\)` around `\(i\)` contained in the observation window.
+
+![](images/ripley_edge.png)
+
+---
+
+# Effect of heterogeneity
+
+- A point density gradient can be confounded with spatial aggregation of points.
+
+
+
+![](diapos_files/figure-html/unnamed-chunk-8-1.png)&lt;!-- --&gt;
+
+---
+
+# Effect of heterogeneity
+
+- For a heterogeneous point pattern, Ripley's `\(K\)` is standardized by local estimate of density `\(\lambda(x, y)\)`
+
+--
+
+- The null model is a heterogeneous Poisson process with the same `\(\lambda(x, y)\)` as the original pattern.
+
+--
+
+- Heterogeneity and aggregation can be differentiated if the processes occur at different scales, e.g. large-scale density gradient combined with aggregation of points at a small scale.
+
+---
+
+# Relationship between two point patterns
+
+.pull-left[
+- Example: Position of trees of two species in a plot.
+
+
+- Does the probability of observing a tree of one species depend on the presence of a tree of the other species at a given distance?
+]
+
+.pull-right[
+
+![](diapos_files/figure-html/unnamed-chunk-9-1.png)&lt;!-- --&gt;
+]
+
+---
+
+# Bivariate `\(K\)` function
+
+- `\(K_{12}(r)\)`: Mean number of points in pattern 2 within a radius `\(r\)` from a point in pattern 1, standardized by the intensity of pattern 2.
+
+--
+
+- `\(K_{12}(r) = K_{21}(r)\)` in theory.
+
+--
+
+- To determine whether there is significant attraction or repulsion between the two patterns, we must randomize their relative position while maintaining each pattern's structure.
+
+---
+
+# Toroidal shift
+
+- Random horizontal and/or vertical translation of one pattern. The part that "comes out" on one side of the window is attached to the other side.
+
+![](diapos_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+---
+
+# Marked point patterns
+
+- Suppose we want to check if the mortality of trees during the outbreak is spatially correlated. How does this question differ from verifying the independent spatial arrangement of two species of trees?
+
+--
+
+- Bivariate point pattern: How does the establisment of one pattern influences the other?
+
+--
+
+- Marked point pattern: With the point positions being fixed, does the mark on a point depend of the mark of neighbouring points?
+
+---
+
+# Mark connection function
+
+- Measures the spatial arrangements of qualitative marks.
+
+--
+
+- `\(p_{ij}(r)\)`: For two points separated by a distance `\(r\)`, probability that point 1 has mark `\(i\)` and point 2 has mark `\(j\)`.
+
+--
+
+- Null hypothesis: marks are independent, so `\(p_{ij}(r) = p_i p_j\)` independently of `\(r\)`.
+
+---
+
+# References
+
+Fortin, M.-J. and Dale, M.R.T. (2005) *Spatial Analysis: A Guide for Ecologists*. Cambridge University Press: Cambridge, UK. 
+
+Wiegand, T. and Moloney, K.A. (2013) *Handbook of Spatial Point-Pattern Analysis in Ecology*, CRC Press.
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script>var slideshow = remark.create({
+"ratio": "16:9",
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

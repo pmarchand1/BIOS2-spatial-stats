@@ -394,15 +394,14 @@ plot(k)</code></pre>
 plot(dens_p)
 plot(semis_split[[2]], add = TRUE)</code></pre>
 <p><img src="1-Patrons_points_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
-<p>Pour mesurer l’agrégation ou la répulsion des points d’un patron hétérogène, nous devons utilisé la version non-homogène de la statistique <span class="math inline">\(K\)</span> (<code>Kinhom</code> dans <em>spatstat</em>). Cette statistique est toujours égale au nombre moyen de voisins dans un rayon <span class="math inline">\(r\)</span> d’un point du patron, mais plutôt que de normaliser ce nombre par l’intensité globale du patron, il est normalisé par l’estimation locale de la densité de points. Pour spécifier cette densité variable, nous assignons <code>dens_p</code> à l’argument <code>lambda</code> dans <code>Kinhom</code>.</p>
-<pre class="r"><code>plot(Kinhom(semis_split[[2]], lambda = dens_p, correction = &quot;iso&quot;))</code></pre>
+<p>Pour mesurer l’agrégation ou la répulsion des points d’un patron hétérogène, nous devons utilisé la version non-homogène de la statistique <span class="math inline">\(K\)</span> (<code>Kinhom</code> dans <em>spatstat</em>). Cette statistique est toujours égale au nombre moyen de voisins dans un rayon <span class="math inline">\(r\)</span> d’un point du patron, mais plutôt que de normaliser ce nombre par l’intensité globale du patron, il est normalisé par l’estimation locale de la densité de points. Comme ci-dessus, nous spécifions <code>sigma = 2</code> pour contrôler le niveau de lissage de l’estimation de la densité variable.</p>
+<pre class="r"><code>plot(Kinhom(semis_split[[2]], sigma = 2, correction = &quot;iso&quot;))</code></pre>
 <p><img src="1-Patrons_points_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
 <p>En tenant compte de l’hétérogénéité du patron à une échelle <code>sigma</code> de 2 m, il semble donc y avoir un déficit de voisins à partir d’environ 1.5 m des points du patron. Il reste à voir si cette déviation est significative.</p>
 <p>Comme précédemment, nous utilisons <code>envelope</code> pour simuler la statistique <code>Kinhom</code> sous le modèle nul. Cependant, ici le modèle nul n’est pas un processus de Poisson homogène (structure spatiale totalement aléatoire). Il s’agit plutôt d’un processus de Poisson hétérogène simulé par la fonction <code>rpoispp(dens_p)</code>, c’est-à-dire que les points sont indépendants les uns des autres, mais leur densité est hétérogène et donnée par <code>dens_p</code>. L’argument <code>simulate</code> de la fonction <code>envelope</code> permet de spécifier une fonction utilisée pour les simulations sous le modèle nul; cette fonction doit avoir un argument, ici <code>x</code>, même s’il n’est pas utilisé.</p>
-<p>Finalement, en plus des arguments nécessaires pour <code>Kinhom</code>, soit <code>lambda</code> et <code>correction</code>, nous spécifions aussi <code>nsim = 199</code> pour réaliser 199 simulations et <code>nrank = 5</code> pour éliminer les 5 résultats les plus extrêmes de chaque côté de l’enveloppe, donc les 10 plus extrêmes sur 199, pour réaliser un intervalle contenant environ 95% de la probabilité sous l’hypothèse nulle.</p>
-<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+<p>Finalement, en plus des arguments nécessaires pour <code>Kinhom</code>, soit <code>sigma</code> et <code>correction</code>, nous spécifions aussi <code>nsim = 199</code> pour réaliser 199 simulations et <code>nrank = 5</code> pour éliminer les 5 résultats les plus extrêmes de chaque côté de l’enveloppe, donc les 10 plus extrêmes sur 199, pour réaliser un intervalle contenant environ 95% de la probabilité sous l’hypothèse nulle.</p>
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, sigma = 2, correction = &quot;iso&quot;,
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
-<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
 <pre><code>## Generating 199 simulations by evaluating function  ...
 ## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
 ## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80
@@ -545,9 +544,8 @@ plot(envelope(fir, markconnect, i = &quot;A&quot;, j = &quot;A&quot;, correction
 plot(dens_p)
 plot(semis_split[[2]], add = TRUE)</code></pre>
 <p><img src="1-Patrons_points_files/figure-html/unnamed-chunk-27-1.png" width="672" /></p>
-<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, lambda = dens_p,  correction = &quot;iso&quot;,
+<pre class="r"><code>khet_p &lt;- envelope(semis_split[[2]], Kinhom, sigma = 5, correction = &quot;iso&quot;,
                    nsim = 199, nrank = 5, simulate = function(x) rpoispp(dens_p))</code></pre>
-<pre><code>## Warning: Envelope may be invalid; argument &#39;lambda&#39; appears to have been fixed.</code></pre>
 <pre><code>## Generating 199 simulations by evaluating function  ...
 ## 1, 2, 3, 4.6.8.10.12.14.16.18.20.22.24.26.28.30.32.34.36.38.40
 ## .42.44.46.48.50.52.54.56.58.60.62.64.66.68.70.72.74.76.78.80

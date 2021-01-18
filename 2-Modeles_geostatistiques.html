@@ -507,8 +507,9 @@ gls_var &lt;- 53.823^2
 gls_nugget &lt;- 0.294 * gls_var
 gls_psill &lt;- gls_var - gls_nugget
 
-plot(var_mg, vgm(&quot;Exp&quot;, psill = gls_psill, range = gls_range, nugget = gls_nugget),
-     col = &quot;black&quot;, ylim = c(0, 4000))</code></pre>
+gls_vgm &lt;- vgm(&quot;Exp&quot;, psill = gls_psill, range = gls_range, nugget = gls_nugget)
+
+plot(var_mg, gls_vgm, col = &quot;black&quot;, ylim = c(0, 4000))</code></pre>
 <p><img src="2-Modeles_geostatistiques_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
 <p>Est-ce que le modèle est moins bien ajusté aux données ici? En fait, ce variogramme empirique représenté par les points avait été obtenu à partir des résidus du modèle linéaire ignorant la corrélation spatiale, donc c’est un estimé biaisé des corrélations spatiales réelles. La méthode est quand même adéquate pour vérifier rapidement s’il y a présence de corrélations spatiales. Toutefois, pour ajuster simultanément les coefficients de la régression et les paramètres de corrélation spatiale, l’approche des moindres carrés généralisés (GLS) est préférable et produira des estimés plus justes.</p>
 <p>Finalement, notez que le résultat du modèle <code>gls</code> donne aussi l’AIC, que nous pouvons utiliser pour comparer l’ajustement de différents modèles (avec différents prédicteurs ou différentes formes de corrélation spatiale).</p>
@@ -540,6 +541,143 @@ head(bryo_belg)</code></pre>
 <li><p>Quel est l’effet de la fraction de forêts et de milieux humides selon le modèle en (c)? Expliquez les différences entre les conclusions de ce modèle et du modèle en (a).</p></li>
 </ol>
 </div>
+</div>
+<div id="krigeage" class="section level1">
+<h1>Krigeage</h1>
+<p>Tel que mentionné précédemment, une application courante des modèles géostatistiques consiste à prédire la valeur de la variable de réponse à des points non-échantillonnés, une forme d’interpolation spatiale appelée krigeage (<em>kriging</em>).</p>
+<p>Il existe trois principaux types de krigeage selon les suppositions faites au sujet de la variable réponse:</p>
+<ul>
+<li><p>Krigeage ordinaire: variable stationnaire avec une moyenne inconnue.</p></li>
+<li><p>Krigeage simple: Variable stationnaire avec une moyenne connue.</p></li>
+<li><p>Krigeage universel: Variable dont la tendance est donnée par un modèle linéaire ou non linéaire.</p></li>
+</ul>
+<p>Pour toutes les méthodes de krigeage, les prédictions à un nouveau point sont une moyenne pondérée des valeurs à des points connus. Ces pondérations sont choisies de manière à ce que le krigeage fournisse la meilleure prédiction linéaire non biaisée de la variable de réponse, si les hypothèses du modèle (en particulier le variogramme) sont correctes. C’est-à-dire que, parmi toutes les prédictions non biaisées possibles, les poids sont choisis de manière à donner l’erreur quadratique moyenne minimale. Le krigeage fournit également une estimation de l’incertitude de chaque prédiction.</p>
+<p>Bien que nous ne présentions pas ici les équations détaillées du krigeage, les poids dépendent à la fois des corrélations (estimées par le variogramme) entre les points échantillonnés et le nouveau point, ainsi que des corrélations entre les points échantillonnés eux-mêmes. Autrement dit, les points échantillonnés proches du nouveau point ont plus de poids, mais les points échantillonnés isolés ont également plus de poids, car les points échantillonnés proches les uns des autres fournissent une informations redondante.</p>
+<p>Le krigeage est une méthode d’interpolation, donc la prédiction à un point échantillonné sera toujours égale à la valeur mesurée (la variable est supposée être mesurée sans erreur, elle varie seulement entre les points). Cependant, en présence d’un effet de pépite, tout petit déplacement par rapport à l’endroit échantillonné présentera une variabilité en fonction de la pépite.</p>
+<p>Dans l’exemple ci-dessous, nous générons un nouvel ensemble de données composé de coordonnées (x, y) générées de façon aléatoire dans la zone d’étude ainsi que des valeurs de pH générées de façon aléatoire sur la base des données <code>oxford</code>. Nous appliquons ensuite la fonction <code>krige</code> pour prédire les valeurs de magnésium à ces nouveaux points. Notez que nous spécifions le variogramme dérivé des résultats du <code>gls</code> dans l’argument <code>model</code> de <code>krige</code>.</p>
+<pre class="r"><code>set.seed(14)
+new_points &lt;- data.frame(
+    XCOORD = runif(100, min(oxford$XCOORD), max(oxford$XCOORD)),
+    YCOORD = runif(100, min(oxford$YCOORD), max(oxford$YCOORD)),
+    PH1 = rnorm(100, mean(oxford$PH1), sd(oxford$PH1))
+)
+
+pred &lt;- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+              newdata = new_points, model = gls_vgm)</code></pre>
+<pre><code>## [using universal kriging]</code></pre>
+<pre class="r"><code>head(pred)</code></pre>
+<pre><code>##     XCOORD    YCOORD var1.pred var1.var
+## 1 227.0169  162.1185  47.13065 1269.002
+## 2 418.9136  465.9013  79.68437 1427.269
+## 3 578.5943 2032.7477  60.30539 1264.471
+## 4 376.2734 1530.7193 127.22366 1412.875
+## 5 591.5336  421.6290 105.88124 1375.485
+## 6 355.7369  404.3378 127.73055 1250.114</code></pre>
+<p>Le résultat de <code>krige</code> comprend les nouvelles coordonnées du point, la prédiction de la variable <code>var1.pred</code> ainsi que sa variance estimée <code>var1.var</code>. Dans le graphique ci-dessous, nous montrons les prédictions moyennes de MG1 à partir du krigeage (triangles) ainsi que les mesures (cercles).</p>
+<pre class="r"><code>pred$MG1 &lt;- pred$var1.pred
+
+ggplot(oxford, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    geom_point(data = pred, shape = 17, size = 2) +
+    coord_fixed()</code></pre>
+<p><img src="2-Modeles_geostatistiques_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>La moyenne et la variance estimées par krigeage peuvent être utilisées pour simuler les valeurs possibles de la variable à chaque nouveau point, conditionnellement aux valeurs échantillonnées. Dans l’exemple ci-dessous, nous avons effectué 4 simulations conditionnelles en ajoutant l’argument <code>nsim = 4</code> à la même instruction <code>krige</code>.</p>
+<pre class="r"><code>sim_mg &lt;- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+                newdata = new_points, model = gls_vgm, nsim = 4)</code></pre>
+<pre><code>## drawing 4 GLS realisations of beta...
+## [using conditional Gaussian simulation]</code></pre>
+<pre class="r"><code>head(sim_mg)</code></pre>
+<pre><code>##     XCOORD    YCOORD      sim1      sim2      sim3      sim4
+## 1 227.0169  162.1185  13.22592  32.43060  42.81847  79.60594
+## 2 418.9136  465.9013  67.94216  15.53717  69.25356  63.42233
+## 3 578.5943 2032.7477  99.93083  77.98291  74.28468  58.98483
+## 4 376.2734 1530.7193 104.86240 155.50774  85.82552 143.07373
+## 5 591.5336  421.6290  78.14221  68.62827 147.33052 130.14264
+## 6 355.7369  404.3378 164.46754 117.26160 131.85158 143.58951</code></pre>
+<pre class="r"><code>library(tidyr)
+sim_mg &lt;- pivot_longer(sim_mg, cols = c(sim1, sim2, sim3, sim4), 
+                       names_to = &quot;sim&quot;, values_to = &quot;MG1&quot;)
+ggplot(sim_mg, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    coord_fixed() +
+    facet_wrap(~ sim)</code></pre>
+<p><img src="2-Modeles_geostatistiques_files/figure-html/unnamed-chunk-19-1.png" width="960" /></p>
+</div>
+<div id="solutions" class="section level1">
+<h1>Solutions</h1>
+<pre class="r"><code>bryo_lm &lt;- lm(sqrt(richness) ~ forest + wetland, data = bryo_belg)
+summary(bryo_lm)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = sqrt(richness) ~ forest + wetland, data = bryo_belg)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -1.8847 -0.4622  0.0545  0.4974  2.3116 
+## 
+## Coefficients:
+##             Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  2.34159    0.08369  27.981  &lt; 2e-16 ***
+## forest       1.11883    0.13925   8.034 9.74e-15 ***
+## wetland     -0.59264    0.17216  -3.442 0.000635 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 0.7095 on 417 degrees of freedom
+## Multiple R-squared:  0.2231, Adjusted R-squared:  0.2193 
+## F-statistic: 59.86 on 2 and 417 DF,  p-value: &lt; 2.2e-16</code></pre>
+<p>La proportion de forêts a un effet positif significatif et la proportion de milieux humides a un effet négatif significatif sur la richesse des bryophytes.</p>
+<pre class="r"><code>plot(variogram(sqrt(richness) ~ forest + wetland, locations = ~ x + y,
+               data = bryo_belg, cutoff = 50), col = &quot;black&quot;)</code></pre>
+<p><img src="2-Modeles_geostatistiques_files/figure-html/unnamed-chunk-21-1.png" width="672" /></p>
+<p>Le variogramme augmente au moins jusqu’à une distance de 40 km, il semble donc y avoir des corrélations spatiales dans les résidus du modèle.</p>
+<pre class="r"><code>bryo_exp &lt;- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corExp(form = ~ x + y, nugget = TRUE))
+bryo_gaus &lt;- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corGaus(form = ~ x + y, nugget = TRUE))
+bryo_spher &lt;- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                  correlation = corSpher(form = ~ x + y, nugget = TRUE))</code></pre>
+<pre class="r"><code>AIC(bryo_lm)</code></pre>
+<pre><code>## [1] 908.6358</code></pre>
+<pre class="r"><code>AIC(bryo_exp)</code></pre>
+<pre><code>## [1] 867.822</code></pre>
+<pre class="r"><code>AIC(bryo_gaus)</code></pre>
+<pre><code>## [1] 870.9592</code></pre>
+<pre class="r"><code>AIC(bryo_spher)</code></pre>
+<pre><code>## [1] 866.9117</code></pre>
+<p>Le modèle sphérique a l’AIC le plus faible.</p>
+<pre class="r"><code>summary(bryo_spher)</code></pre>
+<pre><code>## Generalized least squares fit by REML
+##   Model: sqrt(richness) ~ forest + wetland 
+##   Data: bryo_belg 
+##        AIC      BIC    logLik
+##   866.9117 891.1102 -427.4558
+## 
+## Correlation Structure: Spherical spatial correlation
+##  Formula: ~x + y 
+##  Parameter estimate(s):
+##      range     nugget 
+## 43.1725287  0.6063165 
+## 
+## Coefficients:
+##                  Value Std.Error   t-value p-value
+## (Intercept)  2.0368778 0.2481637  8.207800   0.000
+## forest       0.6989832 0.1481690  4.717471   0.000
+## wetland     -0.2441125 0.1809119 -1.349344   0.178
+## 
+##  Correlation: 
+##         (Intr) forest
+## forest  -0.251       
+## wetland -0.235  0.241
+## 
+## Standardized residuals:
+##         Min          Q1         Med          Q3         Max 
+## -1.75204008 -0.06568726  0.61415414  1.15240184  3.23322262 
+## 
+## Residual standard error: 0.7998274 
+## Degrees of freedom: 420 total; 417 residual</code></pre>
+<p>La magnitude des deux effets est moins importante et l’effet des milieux humides n’est plus significatif. Comme c’est le cas pour d’autres types de résidus non indépendants, la “taille effective” de l’échantillon est ici inférieure au nombre de points, car des points proches les uns des autres fournissent une information redondante. Par conséquent, la relation entre les prédicteurs et la réponse est moins claire que celle donnée par le modèle supposant que tous ces points étaient indépendants.</p>
+<p>Notez que les résultats pour les trois modèles <code>gls</code> sont assez similaires, donc le choix d’inclure des corrélations spatiales était plus important que la forme exacte supposée pour le variogramme.</p>
 </div>
 
 

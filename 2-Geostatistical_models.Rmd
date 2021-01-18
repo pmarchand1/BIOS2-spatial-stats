@@ -314,8 +314,9 @@ gls_var <- 53.823^2
 gls_nugget <- 0.294 * gls_var
 gls_psill <- gls_var - gls_nugget
 
-plot(var_mg, vgm("Exp", psill = gls_psill, range = gls_range, nugget = gls_nugget),
-     col = "black", ylim = c(0, 4000))
+gls_vgm <- vgm("Exp", psill = gls_psill, range = gls_range, nugget = gls_nugget)
+
+plot(var_mg, gls_vgm, col = "black", ylim = c(0, 4000))
 ```
 
 Does the model fit the data less well here? In fact, this empirical variogram represented by the points was obtained from the residuals of the linear model ignoring the spatial correlation, so it is a biased estimate of the actual spatial correlations. The method is still adequate to quickly check if spatial correlations are present. However, to simultaneously fit the regression coefficients and the spatial correlation parameters, the generalized least squares (GLS) approach is preferable and will produce more accurate estimates.
@@ -348,3 +349,106 @@ c) Re-fit the linear model in (a) with the `gls` function in the *nlme* package,
 d) What is the effect of the proportion of forests and wetlands according to the model in (c)? Explain the differences between the conclusions of this model and the model in (a). 
 
 
+# Kriging
+
+As mentioned before, a common application of geostatistical models is to predict the value of the response variable at unsampled locations, a form of spatial interpolation called kriging (pronounced with a hard "g").
+
+There are three basic types of kriging based on the assumptions made about the response variable:
+
+- Ordinary kriging: Stationary variable with an unknown mean.
+
+- Simple kriging: Stationary variable with a known mean.
+
+- Universal kriging: Variable with a trend given by a linear or non-linear model.
+
+For all kriging methods, the predictions at a new point are a weighted mean of the values at known points. These weights are chosen so that kriging provides the best linear unbiased prediction of the response variable, if the model assumptions (in particular the variogram) are correct. That is, among all possible unbiased predictions, the weights are chosen to give the minimum mean square error. Kriging also provides an estimate of the uncertainty of each prediction.
+
+While we will not present the detailed kriging equations here, the weights depend on both the correlations (estimated by the variogram) between the sampled points and the new point, as well of the correlations between the sampled points themselves. In other words, sampled points near the new point are given more weight, but isolated sampled points are also given more weight, because sample points close to each other provide redundant information.
+
+Kriging is an interpolation method, so the prediction at a sampled point will always be equal to the measured value (the measurement is supposed to have no error, just spatial variation). However, in the presence of a nugget effect, any small displacement from the sampled location will show variability according to the nugget.
+
+In the example below, we generate a new dataset composed of randomly-generated (x, y) coordinates within the study area as well as randomly-generated pH values based on the `oxford` data. We then apply the function `krige` to predict the magnesium values at these new points. Note that we specify the variogram derived from the GLS results in the `model` argument to `krige`.
+
+```{r}
+set.seed(14)
+new_points <- data.frame(
+    XCOORD = runif(100, min(oxford$XCOORD), max(oxford$XCOORD)),
+    YCOORD = runif(100, min(oxford$YCOORD), max(oxford$YCOORD)),
+    PH1 = rnorm(100, mean(oxford$PH1), sd(oxford$PH1))
+)
+
+pred <- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+              newdata = new_points, model = gls_vgm)
+head(pred)
+```
+
+The result of `krige` includes the new point coordinates, the prediction of the variable `var1.pred` along with its estimated variance `var1.var`. In the graph below, we show the mean MG1 predictions from kriging (triangles) along with the measurements (circles).
+
+```{r}
+pred$MG1 <- pred$var1.pred
+
+ggplot(oxford, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    geom_point(data = pred, shape = 17, size = 2) +
+    coord_fixed()
+```
+
+The estimated mean and variance from kriging can be used to simulate possible values of the variable at each new point, conditional on the sampled values. In the example below, we performed 4 conditional simulations by adding the argument `nsim = 4` to the same `krige` instruction.
+
+```{r}
+sim_mg <- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+                newdata = new_points, model = gls_vgm, nsim = 4)
+head(sim_mg)
+```
+
+```{r, message = FALSE, warning = FALSE, fig.dim = c(10, 5)}
+library(tidyr)
+sim_mg <- pivot_longer(sim_mg, cols = c(sim1, sim2, sim3, sim4), 
+                       names_to = "sim", values_to = "MG1")
+ggplot(sim_mg, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    coord_fixed() +
+    facet_wrap(~ sim)
+```
+
+# Solutions
+
+```{r}
+bryo_lm <- lm(sqrt(richness) ~ forest + wetland, data = bryo_belg)
+summary(bryo_lm)
+```
+
+The proportion of forest has a significant positive effect and the proportion of wetlands has a significant negative effect on bryophyte richness.
+
+```{r}
+plot(variogram(sqrt(richness) ~ forest + wetland, locations = ~ x + y,
+               data = bryo_belg, cutoff = 50), col = "black")
+```
+
+The variogram is increasing from 0 to at least 40 km, so there appears to be spatial correlations in the model residuals.
+
+```{r}
+bryo_exp <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corExp(form = ~ x + y, nugget = TRUE))
+bryo_gaus <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corGaus(form = ~ x + y, nugget = TRUE))
+bryo_spher <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                  correlation = corSpher(form = ~ x + y, nugget = TRUE))
+```
+
+```{r}
+AIC(bryo_lm)
+AIC(bryo_exp)
+AIC(bryo_gaus)
+AIC(bryo_spher)
+```
+
+The spherical model has the smallest AIC.
+
+```{r}
+summary(bryo_spher)
+```
+
+Both effects are less important in magnitude and the effect of wetlands is not significant anymore. As is the case for other types of non-independent residuals, the "effective sample size" here is less than the number of points, since points close to each other provide redundant information. Therefore, the relationship between predictors and response is less clear than given by the model assuming all these points were independent.
+
+Note that the results for all three `gls` models are quite similar, so the choice to include spatial correlations was more important than the exact shape assumed for the variogram.

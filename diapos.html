@@ -308,11 +308,245 @@ class: inverse, center, middle
 
 ---
 
-# References
+class: inverse, center, middle
 
-Fortin, M.-J. and Dale, M.R.T. (2005) *Spatial Analysis: A Guide for Ecologists*. Cambridge University Press: Cambridge, UK. 
+# Spatial correlation
 
-Wiegand, T. and Moloney, K.A. (2013) *Handbook of Spatial Point-Pattern Analysis in Ecology*, CRC Press.
+---
+
+# Spatial correlation of a variable
+
+- Observations near each other in space tend to be more similar than distant ones.
+
+- First law of geography (W. Tobler): "Everything is related to everything else, but near things are more related than distant things."
+
+--
+
+- Autocorrelation: correlation between the measurements of the same variable at different times or places.
+
+---
+
+# Intrinsic or induced dependence
+
+Two types of spatial dependence for an observed response `\(y\)`.
+
+--
+
+Induced dependence: due to spatial dependence of external variables that influence `\(y\)`.
+
+--
+
+- Abundance of a species is correlated for nearby sites due to similar habitat conditions.
+
+--
+
+If the external variables are included in the model for `\(y\)`, the residuals from that model could be independent.
+
+---
+
+# Intrinsic or induced dependence
+
+Intrinsic dependence: due to spatial dependence for the variable `\(y\)` itself.
+
+--
+
+- Abundance of a species is correlated for nearby sites due to dispersal between sites.
+
+--
+
+Intrinsic dependence cannot be eliminated by adding predictors to a model.
+
+---
+
+# Spatial coordinates as predictors
+
+- Example: using longitude and latitude as predictors in a linear or additive model.
+
+--
+
+- Can detect a systematic gradient (linear or not) at a large scale.
+
+--
+
+- Differs from a spatial correlation in the random variation of a variable (i.e. the residuals, after removing all systematic effects).
+
+---
+
+# Comparison with random effects
+
+- Random effects for the non-independence of grouped data: residual variation is correlated between elements of the same group.
+
+--
+
+- Groups are often defined along spatial boundaries (e.g. measurements at several study sites).
+
+--
+
+- Ignores the effect of spatial proximity between groups.
+
+---
+
+class: inverse, center, middle
+
+# Geostatistical models
+
+---
+
+# Geostatistics
+
+- Set of methods that originated in the Earth sciences.
+
+--
+
+- Variables are continuously distributed in space and we want to estimate that distribution from a samples taken at different points.
+
+--
+
+- Consider a variable `\(z(x, y)\)` measured at different `\((x, y)\)` coordinates. 
+
+--
+
+- Assumption: `\(z\)` is stationary.
+
+---
+
+# Variogram
+
+- The variogram `\(\gamma_z(h)\)` of `\(z\)` is equal to half the mean square difference between the values of `\(z\)` for two points `\((x_i, y_i)\)` and `\((x_j, y_j)\)` separated by a distance `\(h\)`.
+
+--
+
+`$$\gamma_z(h) = \frac{1}{2} \text{E} \left[ \left( z(x_i, y_i) - z(x_j, y_j) \right)^2 \right]_{d_{ij} = h}$$`
+
+--
+
+- The variogram is related to the autocorrelation function `\(\rho_z(h)\)` by the equation:
+
+`$$\gamma_z = \sigma_z^2(1 - \rho_z)$$`
+
+--
+
+- `\(\gamma\)` is sometimes named "semivariogram" or "semivariance" due to the 1/2 factor, but note that in absence of spatial correlation, `\(\gamma_z = \sigma^2_z\)`.
+
+---
+
+# Exponential variogram model
+
+`$$\rho_z(h) = e^{-h/r}$$`
+
+--
+
+- Correlation multiplied by `\(1/e \approx 0.37\)` every time the distance increases by `\(r\)`, where `\(r\)` is the *range* of the correlation.
+
+--
+
+`$$\gamma_z(h) = \sigma_z^2 (1 - e^{-h/r})$$`
+
+---
+
+# Components of a variogram
+
+`$$\gamma_z(h) = s (1 - e^{-h/r})$$`
+
+![](diapos_files/figure-html/unnamed-chunk-11-1.png)&lt;!-- --&gt;
+
+---
+
+# Components of a variogram
+
+`$$\gamma_z(h) = n + (s - n) (1 - e^{-h/r})$$`
+
+![](diapos_files/figure-html/unnamed-chunk-12-1.png)&lt;!-- --&gt;
+
+---
+
+# Theoretical variogram models
+
+ Model | `\(\rho(h)\)` | `\(\gamma(h)\)`
+-------|-----------|-------------
+Exponential | `\(\exp\left(-\frac{h}{r}\right)\)` | `\(s \left(1 - \exp\left(-\frac{h}{r}\right)\right)\)`
+Gaussian | `\(\exp\left(-\frac{h^2}{r^2}\right)\)` | `\(s \left(1 - \exp\left(-\frac{h^2}{r^2}\right)\right)\)`
+Spherical `\((h &lt; r)\)` * | `\(1 - \frac{3}{2}\frac{h}{r} + \frac{1}{2}\frac{h^3}{r^3}\)` | `\(s \left(\frac{3}{2}\frac{h}{r} - \frac{1}{2}\frac{h^3}{r^3} \right)\)`
+
+\* For a spherical model, `\(\rho = 0\)` and `\(\gamma = s\)` if `\(h \ge r\)`.
+
+---
+
+# Theoretical variogram models
+
+![](diapos_files/figure-html/unnamed-chunk-13-1.png)&lt;!-- --&gt;
+
+---
+
+# Empirical variogram
+
+- Estimating `\(\gamma_z(h)\)` from the mean square difference for pairs of points separated by a distance of around `\(h \; (\pm \delta)\)`. 
+
+`$$\hat{\gamma_z}(h) = \frac{1}{2 N_{\text{paires}}} \sum \left[ \left( z(x_i, y_i) - z(x_j, y_j) \right)^2 \right]_{d_{ij} = h \pm \delta}$$`
+
+---
+
+# Regression model with spatial correlation
+
+`$$v = \beta_0 + \sum_i \beta_i u_i + z + \epsilon$$`
+
+- Response `\(v\)` and predictors `\(u\)`.
+
+--
+
+- `\(z\)`: Spatially correlated residual.
+
+- `\(\epsilon\)`: Independent residual.
+
+---
+
+# Regression model with spatial correlation
+
+`$$v = \beta_0 + \sum_i \beta_i u_i + z + \epsilon$$`
+
+1. Fit the regression model without spatial correlation.
+
+--
+
+2. Verify the presence of spatial correlation from the empirical variogram of the residuals.
+
+--
+
+3. Fit one or more regression models with spatial correlation and select the one that shows the best fit to the data. 
+
+---
+
+# Generalized least squares
+
+- `gls` function in *nlme* package, included with R.
+
+--
+
+- Method to fit linear models when the residuals are not independent or when the residual variance is not the same for all observations.
+
+--
+
+- Uses an iterative algorithm.
+
+---
+
+# Generalized least squares
+
+For the case of a regression with spatial correlation:
+
+--
+
+1. A classical linear regression model (without correlation) is fitted to obtain residuals.
+
+--
+
+2. The spatial correlation model (variogram) is fitted with those residuals.
+
+--
+
+3. The regression coefficients are re-estimated, now taking into account the correlations.
+
+---
     </textarea>
 <style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
 <script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>

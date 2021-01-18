@@ -314,8 +314,9 @@ gls_var <- 53.823^2
 gls_nugget <- 0.294 * gls_var
 gls_psill <- gls_var - gls_nugget
 
-plot(var_mg, vgm("Exp", psill = gls_psill, range = gls_range, nugget = gls_nugget),
-     col = "black", ylim = c(0, 4000))
+gls_vgm <- vgm("Exp", psill = gls_psill, range = gls_range, nugget = gls_nugget)
+
+plot(var_mg, gls_vgm, col = "black", ylim = c(0, 4000))
 ```
 
 Est-ce que le modèle est moins bien ajusté aux données ici? En fait, ce variogramme empirique représenté par les points avait été obtenu à partir des résidus du modèle linéaire ignorant la corrélation spatiale, donc c'est un estimé biaisé des corrélations spatiales réelles. La méthode est quand même adéquate pour vérifier rapidement s'il y a présence de corrélations spatiales. Toutefois, pour ajuster simultanément les coefficients de la régression et les paramètres de corrélation spatiale, l'approche des moindres carrés généralisés (GLS) est préférable et produira des estimés plus justes.
@@ -346,3 +347,109 @@ b) Calculez le variogramme empirique des résidus du modèle en (a). Semble-t-il
 c) Ré-ajustez le modèle linéaire en (a) avec la fonction `gls` du package *nlme*, en essayant différents types de corrélations spatiales (exponentielle, gaussienne, sphérique). Comparez les modèles (incluant celui sans corrélation spatiale) avec l'AIC.
 
 d) Quel est l'effet de la fraction de forêts et de milieux humides selon le modèle en (c)? Expliquez les différences entre les conclusions de ce modèle et du modèle en (a).
+
+
+# Krigeage
+
+Tel que mentionné précédemment, une application courante des modèles géostatistiques consiste à prédire la valeur de la variable de réponse à des points non-échantillonnés, une forme d'interpolation spatiale appelée krigeage (*kriging*).
+
+Il existe trois principaux types de krigeage selon les suppositions faites au sujet de la variable réponse:
+
+- Krigeage ordinaire: variable stationnaire avec une moyenne inconnue.
+
+- Krigeage simple: Variable stationnaire avec une moyenne connue.
+
+- Krigeage universel: Variable dont la tendance est donnée par un modèle linéaire ou non linéaire.
+
+Pour toutes les méthodes de krigeage, les prédictions à un nouveau point sont une moyenne pondérée des valeurs à des points connus. Ces pondérations sont choisies de manière à ce que le krigeage fournisse la meilleure prédiction linéaire non biaisée de la variable de réponse, si les hypothèses du modèle (en particulier le variogramme) sont correctes. C'est-à-dire que, parmi toutes les prédictions non biaisées possibles, les poids sont choisis de manière à donner l'erreur quadratique moyenne minimale. Le krigeage fournit également une estimation de l'incertitude de chaque prédiction.
+
+Bien que nous ne présentions pas ici les équations détaillées du krigeage, les poids dépendent à la fois des corrélations (estimées par le variogramme) entre les points échantillonnés et le nouveau point, ainsi que des corrélations entre les points échantillonnés eux-mêmes. Autrement dit, les points échantillonnés proches du nouveau point ont plus de poids, mais les points échantillonnés isolés ont également plus de poids, car les points échantillonnés proches les uns des autres fournissent une informations redondante.
+
+Le krigeage est une méthode d'interpolation, donc la prédiction à un point échantillonné sera toujours égale à la valeur mesurée (la variable est supposée être mesurée sans erreur, elle varie seulement entre les points). Cependant, en présence d'un effet de pépite, tout petit déplacement par rapport à l'endroit échantillonné présentera une variabilité en fonction de la pépite.
+
+Dans l'exemple ci-dessous, nous générons un nouvel ensemble de données composé de coordonnées (x, y) générées de façon aléatoire dans la zone d'étude ainsi que des valeurs de pH générées de façon aléatoire sur la base des données `oxford`. Nous appliquons ensuite la fonction `krige` pour prédire les valeurs de magnésium à ces nouveaux points. Notez que nous spécifions le variogramme dérivé des résultats du `gls` dans l'argument `model` de `krige`.
+
+```{r}
+set.seed(14)
+new_points <- data.frame(
+    XCOORD = runif(100, min(oxford$XCOORD), max(oxford$XCOORD)),
+    YCOORD = runif(100, min(oxford$YCOORD), max(oxford$YCOORD)),
+    PH1 = rnorm(100, mean(oxford$PH1), sd(oxford$PH1))
+)
+
+pred <- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+              newdata = new_points, model = gls_vgm)
+head(pred)
+```
+
+Le résultat de `krige` comprend les nouvelles coordonnées du point, la prédiction de la variable `var1.pred` ainsi que sa variance estimée `var1.var`. Dans le graphique ci-dessous, nous montrons les prédictions moyennes de MG1 à partir du krigeage (triangles) ainsi que les mesures (cercles).
+
+```{r}
+pred$MG1 <- pred$var1.pred
+
+ggplot(oxford, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    geom_point(data = pred, shape = 17, size = 2) +
+    coord_fixed()
+```
+
+La moyenne et la variance estimées par krigeage peuvent être utilisées pour simuler les valeurs possibles de la variable à chaque nouveau point, conditionnellement aux valeurs échantillonnées. Dans l'exemple ci-dessous, nous avons effectué 4 simulations conditionnelles en ajoutant l'argument `nsim = 4` à la même instruction `krige`.
+
+```{r}
+sim_mg <- krige(MG1 ~ PH1, locations = ~ XCOORD + YCOORD, data = oxford,
+                newdata = new_points, model = gls_vgm, nsim = 4)
+head(sim_mg)
+```
+
+```{r, message = FALSE, warning = FALSE, fig.dim = c(10, 5)}
+library(tidyr)
+sim_mg <- pivot_longer(sim_mg, cols = c(sim1, sim2, sim3, sim4), 
+                       names_to = "sim", values_to = "MG1")
+ggplot(sim_mg, aes(x = YCOORD, y = XCOORD, color = MG1)) +
+    geom_point() +
+    coord_fixed() +
+    facet_wrap(~ sim)
+```
+
+
+# Solutions
+
+```{r}
+bryo_lm <- lm(sqrt(richness) ~ forest + wetland, data = bryo_belg)
+summary(bryo_lm)
+```
+
+La proportion de forêts a un effet positif significatif et la proportion de milieux humides a un effet négatif significatif sur la richesse des bryophytes.
+
+```{r}
+plot(variogram(sqrt(richness) ~ forest + wetland, locations = ~ x + y,
+               data = bryo_belg, cutoff = 50), col = "black")
+```
+
+Le variogramme augmente au moins jusqu'à une distance de 40 km, il semble donc y avoir des corrélations spatiales dans les résidus du modèle.
+
+```{r}
+bryo_exp <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corExp(form = ~ x + y, nugget = TRUE))
+bryo_gaus <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                correlation = corGaus(form = ~ x + y, nugget = TRUE))
+bryo_spher <- gls(sqrt(richness) ~ forest + wetland, data = bryo_belg,
+                  correlation = corSpher(form = ~ x + y, nugget = TRUE))
+```
+
+```{r}
+AIC(bryo_lm)
+AIC(bryo_exp)
+AIC(bryo_gaus)
+AIC(bryo_spher)
+```
+
+Le modèle sphérique a l'AIC le plus faible.
+
+```{r}
+summary(bryo_spher)
+```
+
+La magnitude des deux effets est moins importante et l'effet des milieux humides n'est plus significatif. Comme c'est le cas pour d'autres types de résidus non indépendants, la "taille effective" de l'échantillon est ici inférieure au nombre de points, car des points proches les uns des autres fournissent une information redondante. Par conséquent, la relation entre les prédicteurs et la réponse est moins claire que celle donnée par le modèle supposant que tous ces points étaient indépendants.
+
+Notez que les résultats pour les trois modèles `gls` sont assez similaires, donc le choix d'inclure des corrélations spatiales était plus important que la forme exacte supposée pour le variogramme.

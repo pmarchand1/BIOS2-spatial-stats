@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philippe Marchand, Université du Québec en Abitibi-Témiscamingue" />
+
+<meta name="date" content="2021-01-19" />
+
+<title>Spatial statistics in ecology, Part 3</title>
+
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="libs/navigation-1.1/tabsets.js"></script>
+<link href="libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Spatial statistics in ecology, Part 3</h1>
+<h4 class="author">Philippe Marchand, Université du Québec en Abitibi-Témiscamingue</h4>
+<h4 class="date">January 19, 2021</h4>
+
+</div>
+
+
+<div id="areal-data" class="section level1">
+<h1>Areal data</h1>
+<p>Areal data are variables measured for regions of space, defined by polygons. This type of data is more common in the social sciences, human geography and epidemiology, where data is often available at the scale of administrative divisions.</p>
+<p>This type of data also appears frequently in natural resource management. For example, the following map shows the forest management units of the Ministère de la Forêt, de la Faune et des Parcs du Québec.</p>
+<p><img src="images/cartes_unites.png" /></p>
+<p>Suppose that a variable is available at the level of these management units. How can we model the spatial correlation between units that are spatially close together?</p>
+<p>One option would be to apply the geostatistical methods seen before, for example by calculating the distance between the centers of the polygons.</p>
+<p>Another option, which is more adapted for areal data, is to define a network where each region is connected to neighbouring regions by a link. It is then assumed that the variables are directly correlated between neighbouring regions only. (Note, however, that direct correlations between immediate neighbours also generate indirect correlations for a chain of neighbours).</p>
+<p>In this type of model, the correlation is not necessarily the same from one link to another. In this case, each link in the network can be associated with a <em>weight</em> representing its importance for the spatial correlation. We represent these weights by a matrix <span class="math inline">\(W\)</span> where <span class="math inline">\(w_{ij}\)</span> is the weight of the link between regions <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. A region has no link with itself, so <span class="math inline">\(w_{ii} = 0\)</span>.</p>
+<p>A simple choice for <span class="math inline">\(W\)</span> is to assign a weight equal to 1 if the regions are neighbours, otherwise 0 (binary weight).</p>
+<p>In addition to land divisions represented by polygons, another example of areal data consists of a grid where the variable is calculated for each cell of the grid. In this case, a cell generally has 4 or 8 neighbouring cells, depending on whether diagonals are included or not.</p>
+</div>
+<div id="morans-i" class="section level1">
+<h1>Moran’s I</h1>
+<p>Before discussing spatial autocorrelation models, we present Moran’s <span class="math inline">\(I\)</span> statistic, which allows us to test whether a significant correlation is present between neighbouring regions.</p>
+<p>Moran’s <span class="math inline">\(I\)</span> is a spatial autocorrelation coefficient of <span class="math inline">\(z\)</span>, weighted by the <span class="math inline">\(w_{ij}\)</span>. It therefore takes values between -1 and 1.</p>
+<p><span class="math display">\[I = \frac{N}{\sum_i \sum_j w_{ij}} \frac{\sum_i \sum_j w_{ij} (z_i - \bar{z}) (z_j - \bar{z})}{\sum_i (z_i - \bar{z})^2}\]</span></p>
+<p>In this equation, we recognize the expression of a correlation, which is the product of the deviations from the mean for two variables <span class="math inline">\(z_i\)</span> and <span class="math inline">\(z_j\)</span>, divided by the product of their standard deviations (it is the same variable here, so we get the variance). The contribution of each pair <span class="math inline">\((i, j)\)</span> is multiplied by its weight <span class="math inline">\(w_{ij}\)</span> and the term on the left (the number of regions <span class="math inline">\(N\)</span> divided by the sum of the weights) ensures that the result is bounded between -1 and 1.</p>
+<p>Since the distribution of <span class="math inline">\(I\)</span> is known in the absence of spatial autocorrelation, this statistic serves to test the null hypothesis that there is no spatial correlation between neighbouring regions.</p>
+<p>Although we will not see an example in this course, Moran’s <span class="math inline">\(I\)</span> can also be applied to point data. In this case, we divide the pairs of points into distance classes and calculate <span class="math inline">\(I\)</span> for each distance class; the weight <span class="math inline">\(w_{ij} = 1\)</span> if the distance between <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> is in the desired distance class, otherwise 0.</p>
+</div>
+<div id="spatial-autoregression-models" class="section level1">
+<h1>Spatial autoregression models</h1>
+<p>Let us recall the formula for a linear regression with spatial dependence:</p>
+<p><span class="math display">\[v = \beta_0 + \sum_i \beta_i u_i + z + \epsilon\]</span></p>
+<p>where <span class="math inline">\(z\)</span> is the portion of the residual variance that is spatially correlated.</p>
+<p>There are two main types of autoregressive models to represent the spatial dependence of <span class="math inline">\(z\)</span>: conditional autoregression (CAR) and simultaneous autoregressive (SAR).</p>
+<div id="conditional-autoregressive-car-model" class="section level2">
+<h2>Conditional autoregressive (CAR) model</h2>
+<p>In the conditional autoregressive model, the value of <span class="math inline">\(z_i\)</span> for the region <span class="math inline">\(i\)</span> follows a normal distribution: its mean depends on the value <span class="math inline">\(z_j\)</span> of neighbouring regions, multiplied by the weight <span class="math inline">\(w_{ij}\)</span> and a correlation coefficient <span class="math inline">\(\rho\)</span>; its standard deviation <span class="math inline">\(\sigma_{z_i}\)</span> may vary from one region to another.</p>
+<p><span class="math display">\[z_i \sim \text{N}\left(\sum_j \rho w_{ij} z_j,\sigma_{z_i} \right)\]</span></p>
+<p>In this model, if <span class="math inline">\(w_{ij}\)</span> is a binary matrix (0 for non-neighbours, 1 for neighbours), then <span class="math inline">\(\rho\)</span> is the coefficient of partial correlation between neighbouring regions. This is similar to a first-order autoregressive model in the context of time series, where the autoregression coefficient indicates the partial correlation.</p>
+</div>
+<div id="simultaneous-autoregressive-sar-model" class="section level2">
+<h2>Simultaneous autoregressive (SAR) model</h2>
+<p>In the simultaneous autoregressive model, the value of <span class="math inline">\(z_i\)</span> is given directly by the sum of contributions from neighbouring values <span class="math inline">\(z_j\)</span>, multiplied by <span class="math inline">\(\rho w_{ij}\)</span>, with an independent residual <span class="math inline">\(\nu_i\)</span> of standard deviation <span class="math inline">\(\sigma_z\)</span>.</p>
+<p><span class="math display">\[z_i = \sum_j \rho w_{ij} z_j + \nu_i\]</span></p>
+<p>At first glance, this looks like a temporal autoregressive model. However, there is an important conceptual difference. For temporal models, the causal influence is directed in only one direction: <span class="math inline">\(v(t-2)\)</span> affects <span class="math inline">\(v(t-1)\)</span> which then affects <span class="math inline">\(v(t)\)</span>. For a spatial model, each <span class="math inline">\(z_j\)</span> that affects <span class="math inline">\(z_i\)</span> depends in turn on <span class="math inline">\(z_i\)</span>. Thus, to determine the joint distribution of <span class="math inline">\(z\)</span>, a system of equations must be solved simultaneously (hence the name of the model).</p>
+<p>For this reason, although this model resembles the formula of CAR model, the solutions of the two models differ and in the case of SAR, the coefficient <span class="math inline">\(\rho\)</span> is not directly equal to the partial correlation due to each neighbouring region.</p>
+<p>For more details on the mathematical aspects of these models, see the article by Ver Hoef et al. (2018) suggested in reference.</p>
+<p>For the moment, we will consider SAR and CAR as two types of possible models to represent a spatial correlation on a network. We can always fit several models and compare them with the AIC to choose the best form of correlation or the best weight matrix.</p>
+<p>The CAR and SAR models share an advantage over geostatistical models in terms of efficiency. In a geostatistical model, spatial correlations are defined between each pair of points, although they become negligible as distance increases. For a CAR or SAR model, only neighbouring regions contribute and most weights are equal to 0, making these models faster to fit than a geostatistical model when the data are massive.</p>
+</div>
+</div>
+<div id="analysis-of-areal-data-in-r" class="section level1">
+<h1>Analysis of areal data in R</h1>
+<p>To illustrate the analysis of areal data in R, we load the packages <em>sf</em> (to read geospatial data), <em>spdep</em> (to define spatial networks and calculate Moran’s <span class="math inline">\(I\)</span>) and <em>spatialreg</em> (for SAR and CAR models).</p>
+<pre class="r"><code>library(sf)
+library(spdep)
+library(spatialreg)</code></pre>
+<p>As an example, we will use a dataset that presents some of the results of the 2018 provincial election in Quebec, with population characteristics of each riding. This data is included in a <em>shapefile</em> (.shp) file type, which we can read with the <code>read_sf</code> function of the <em>sf</em> package.</p>
+<pre class="r"><code>elect2018 &lt;- read_sf(&quot;data/elect2018.shp&quot;)
+head(elect2018)</code></pre>
+<pre><code>## Simple feature collection with 6 features and 9 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: 97879.03 ymin: 174515.3 xmax: 694261.1 ymax: 599757.1
+## proj4string:    +proj=lcc +lat_1=46 +lat_2=50 +lat_0=44 +lon_0=-70 +x_0=800000 +y_0=0 +datum=NAD83 +units=m +no_defs 
+## # A tibble: 6 x 10
+##   circ  age_moy pct_frn pct_prp rev_med propCAQ propPQ propPLQ propQS
+##   &lt;chr&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;dbl&gt;   &lt;int&gt;   &lt;dbl&gt;  &lt;dbl&gt;   &lt;dbl&gt;  &lt;dbl&gt;
+## 1 Abit~    40.8   0.963   0.644   34518    42.7   19.5    18.8   15.7
+## 2 Abit~    42.2   0.987   0.735   33234    34.1   33.3    11.3   16.6
+## 3 Acad~    40.3   0.573   0.403   25391    16.5    9      53.8   13.8
+## 4 Anjo~    43.5   0.821   0.416   31275    28.9   14.7    39.1   14.5
+## 5 Arge~    43.3   0.858   0.766   31097    38.9   21.1    17.4   12.2
+## 6 Arth~    43.4   0.989   0.679   30082    61.8    9.4    11.4   12.6
+## # ... with 1 more variable: geometry &lt;MULTIPOLYGON [m]&gt;</code></pre>
+<p><em>Note</em>: The dataset is actually composed of 4 files with the extensions .dbf, .prj, .shp and .shx, but it is sufficient to write the name of the .shp file in <code>read_sf</code>.</p>
+<p>The columns of the dataset are, in order:</p>
+<ul>
+<li>the name of the electoral riding (<code>circ</code>);</li>
+<li>four characteristics of the population (<code>age_moy</code> = mean age, <code>pct_frn</code> = fraction of the population that speaks mainly French at home, <code>pct_prp</code> = fraction of households that own their home, <code>rev_med</code> = median income);</li>
+<li>four columns showing the fraction of votes obtained by the main parties (CAQ, PQ, PLQ, QS);</li>
+<li>a <code>geometry</code> column that contains the geometric object (multipolygon) corresponding to the riding.</li>
+</ul>
+<p>To illustrate one of the variables on a map, we call the <code>plot</code> function with the name of the column in square brackets and quotation marks.</p>
+<pre class="r"><code>plot(elect2018[&quot;rev_med&quot;])</code></pre>
+<p><img src="3-Areal_data_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>In this example, we want to model the fraction of votes obtained by the CAQ based on the characteristics of the population in each riding and taking into account the spatial correlations between neighbouring ridings.</p>
+<div id="definition-of-the-neighbourhood-network" class="section level2">
+<h2>Definition of the neighbourhood network</h2>
+<p>The <code>poly2nb</code> function of the <em>spdep</em> package defines a neighbourhood network from polygons. The result <code>vois</code> is a list of 125 elements where each element contains the indices of the neighbouring (bordering) polygons of a given polygon.</p>
+<pre class="r"><code>vois &lt;- poly2nb(elect2018)
+vois[[1]]</code></pre>
+<pre><code>## [1]   2  37  63  88 101 117</code></pre>
+<p>Thus, the first riding (Abitibi-Est) has 6 neighbouring ridings, for which the names can be found as follows:</p>
+<pre class="r"><code>elect2018$circ[vois[[1]]]</code></pre>
+<pre><code>## [1] &quot;Abitibi-Ouest&quot;               &quot;Gatineau&quot;                   
+## [3] &quot;Laviolette-Saint-Maurice&quot;    &quot;Pontiac&quot;                    
+## [5] &quot;Rouyn-Noranda-Témiscamingue&quot; &quot;Ungava&quot;</code></pre>
+<p>We can illustrate this network by extracting the coordinates of the center of each district, creating a blank map with <code>plot(elect2018["geometry"])</code>, then adding the network as an additional layer with <code>plot(vois, add = TRUE, coords = coords)</code>.</p>
+<pre class="r"><code>coords &lt;- st_centroid(elect2018) %&gt;%
+    st_coordinates()
+plot(elect2018[&quot;geometry&quot;])
+plot(vois, add = TRUE, col = &quot;red&quot;, coords = coords)</code></pre>
+<p><img src="3-Areal_data_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>We can “zoom” on southern Québec by choosing the limits <code>xlim</code> and <code>ylim</code>.</p>
+<pre class="r"><code>plot(elect2018[&quot;geometry&quot;], 
+     xlim = c(400000, 800000), ylim = c(100000, 500000))
+plot(vois, add = TRUE, col = &quot;red&quot;, coords = coords)</code></pre>
+<p><img src="3-Areal_data_files/figure-html/unnamed-chunk-7-1.png" width="672" /></p>
+<p>We still have to add weights to each network link with the <code>nb2listw</code> function. The style of weights “B” corresponds to binary weights, i.e. 1 for the presence of link and 0 for the absence of link between two ridings.</p>
+<p>Once these weights are defined, we can verify with Moran’s test whether there is a significant autocorrelation of votes obtained by the CAQ between neighbouring ridings.</p>
+<pre class="r"><code>poids &lt;- nb2listw(vois, style = &quot;B&quot;)
+
+moran.test(elect2018$propCAQ, poids)</code></pre>
+<pre><code>## 
+##  Moran I test under randomisation
+## 
+## data:  elect2018$propCAQ  
+## weights: poids    
+## 
+## Moran I statistic standard deviate = 13.148, p-value &lt; 2.2e-16
+## alternative hypothesis: greater
+## sample estimates:
+## Moran I statistic       Expectation          Variance 
+##       0.680607768      -0.008064516       0.002743472</code></pre>
+<p>The value <span class="math inline">\(I = 0.68\)</span> is very significant judging by the <span class="math inline">\(p\)</span>-value of the test.</p>
+<p>Let’s verify if the spatial correlation persists after taking into account the four characteristics of the population, therefore by inspecting the residuals of a linear model including these four predictors.</p>
+<pre class="r"><code>elect_lm &lt;- lm(propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, data = elect2018)
+summary(elect_lm)</code></pre>
+<pre><code>## 
+## Call:
+## lm(formula = propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, 
+##     data = elect2018)
+## 
+## Residuals:
+##      Min       1Q   Median       3Q      Max 
+## -30.9890  -4.4878   0.0562   6.2653  25.8146 
+## 
+## Coefficients:
+##               Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)  1.354e+01  1.836e+01   0.737    0.463    
+## age_moy     -9.170e-01  3.855e-01  -2.378    0.019 *  
+## pct_frn      4.588e+01  5.202e+00   8.820 1.09e-14 ***
+## pct_prp      3.582e+01  6.527e+00   5.488 2.31e-07 ***
+## rev_med     -2.624e-05  2.465e-04  -0.106    0.915    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Residual standard error: 9.409 on 120 degrees of freedom
+## Multiple R-squared:  0.6096, Adjusted R-squared:  0.5965 
+## F-statistic: 46.84 on 4 and 120 DF,  p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>moran.test(residuals(elect_lm), poids)</code></pre>
+<pre><code>## 
+##  Moran I test under randomisation
+## 
+## data:  residuals(elect_lm)  
+## weights: poids    
+## 
+## Moran I statistic standard deviate = 6.7047, p-value = 1.009e-11
+## alternative hypothesis: greater
+## sample estimates:
+## Moran I statistic       Expectation          Variance 
+##       0.340083290      -0.008064516       0.002696300</code></pre>
+<p>Moran’s <span class="math inline">\(I\)</span> has decreased but remains significant, so some of the previous correlation was induced by these predictors, but there remains a spatial correlation due to other factors.</p>
+</div>
+<div id="spatial-autoregression-models-1" class="section level2">
+<h2>Spatial autoregression models</h2>
+<p>Finally, we fit SAR and CAR models to these data with the <code>spautolm</code> (<em>spatial autoregressive linear model</em>) function of <em>spatialreg</em>. Here is the code for a SAR model including the effect of the same four predictors.</p>
+<pre class="r"><code>elect_sar &lt;- spautolm(propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, 
+                      data = elect2018, listw = poids)
+summary(elect_sar)</code></pre>
+<pre><code>## 
+## Call: spautolm(formula = propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, 
+##     data = elect2018, listw = poids)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -23.08342  -4.10573   0.24274   4.29941  23.08245 
+## 
+## Coefficients: 
+##                Estimate  Std. Error z value  Pr(&gt;|z|)
+## (Intercept) 15.09421119 16.52357745  0.9135   0.36098
+## age_moy     -0.70481703  0.32204139 -2.1886   0.02863
+## pct_frn     39.09375061  5.43653962  7.1909 6.435e-13
+## pct_prp     14.32329345  6.96492611  2.0565   0.03974
+## rev_med      0.00016730  0.00023209  0.7208   0.47101
+## 
+## Lambda: 0.12887 LR test value: 42.274 p-value: 7.9339e-11 
+## Numerical Hessian standard error of lambda: 0.012069 
+## 
+## Log likelihood: -433.8862 
+## ML residual variance (sigma squared): 53.028, (sigma: 7.282)
+## Number of observations: 125 
+## Number of parameters estimated: 7 
+## AIC: 881.77</code></pre>
+<p>The value given by <code>Lambda</code> in the summary corresponds to the coefficient <span class="math inline">\(\rho\)</span> in our description of the model. The likelihood-ratio test (<code>LR test</code>) confirms that this residual spatial correlation (after controlling for the effect of predictors) is significant.</p>
+<p>The estimated effects for the predictors are similar to those of the linear model without spatial correlation. The effects of mean age, fraction of francophones and fraction of homeowners remain significant, although their magnitude has decreased somewhat.</p>
+<p>To fit a CAR rather than SAR model, we must specify <code>family = "CAR"</code>.</p>
+<pre class="r"><code>elect_car &lt;- spautolm(propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, 
+                      data = elect2018, listw = poids, family = &quot;CAR&quot;)
+summary(elect_car)</code></pre>
+<pre><code>## 
+## Call: spautolm(formula = propCAQ ~ age_moy + pct_frn + pct_prp + rev_med, 
+##     data = elect2018, listw = poids, family = &quot;CAR&quot;)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -21.73315  -4.24623  -0.24369   3.44228  23.43749 
+## 
+## Coefficients: 
+##                Estimate  Std. Error z value  Pr(&gt;|z|)
+## (Intercept) 16.57164696 16.84155327  0.9840  0.325128
+## age_moy     -0.79072151  0.32972225 -2.3981  0.016478
+## pct_frn     38.99116707  5.43667482  7.1719 7.399e-13
+## pct_prp     17.98557474  6.80333470  2.6436  0.008202
+## rev_med      0.00012639  0.00023106  0.5470  0.584364
+## 
+## Lambda: 0.15517 LR test value: 40.532 p-value: 1.9344e-10 
+## Numerical Hessian standard error of lambda: 0.0026868 
+## 
+## Log likelihood: -434.7573 
+## ML residual variance (sigma squared): 53.9, (sigma: 7.3416)
+## Number of observations: 125 
+## Number of parameters estimated: 7 
+## AIC: 883.51</code></pre>
+<p>For a CAR model with binary weights, the value of <code>Lambda</code> (which we called <span class="math inline">\(\rho\)</span>) directly gives the partial correlation coefficient between neighbouring districts. Note that the AIC here is slightly higher than the SAR model, so the latter gave a better fit.</p>
+</div>
+<div id="exercise" class="section level2">
+<h2>Exercise</h2>
+<p>The <code>rls_covid</code> dataset, in <em>shapefile</em> format, contains data on detected COVID-19 cases (<code>cas</code>), number of cases per 1000 people (<code>taux_1k</code>) and the population density (<code>dens_pop</code>) in each of Quebec’s local health service networks (RLS) (Source: Data downloaded from the Institut national de santé publique du Québec as of January 17, 2021).</p>
+<pre class="r"><code>rls_covid &lt;- read_sf(&quot;data/rls_covid.shp&quot;)
+head(rls_covid)</code></pre>
+<pre><code>## Simple feature collection with 6 features and 5 fields
+## geometry type:  MULTIPOLYGON
+## dimension:      XY
+## bbox:           xmin: 785111.2 ymin: 341057.8 xmax: 979941.5 ymax: 541112.7
+## proj4string:    +proj=lcc +lat_1=46 +lat_2=50 +lat_0=44 +lon_0=-70 +x_0=800000 +y_0=0 +datum=NAD83 +units=m +no_defs 
+## # A tibble: 6 x 6
+##   RLS_code RLS_nom      cas taux_1k dens_pop                            geometry
+##   &lt;chr&gt;    &lt;chr&gt;      &lt;dbl&gt;   &lt;dbl&gt;    &lt;dbl&gt;                  &lt;MULTIPOLYGON [m]&gt;
+## 1 0111     RLS de Ka~   152    7.34     6.76 (((827028.3 412772.4, 827034.9 412~
+## 2 0112     RLS de Ri~   256    7.34    19.6  (((855905 452116.9, 855784.2 45198~
+## 3 0113     RLS de Té~    81    4.26     4.69 (((911829.4 441311.2, 912116.1 441~
+## 4 0114     RLS des B~    28    3.3      5.35 (((879249.6 471975.6, 879234.3 471~
+## 5 0115     RLS de Ri~   576    9.96    15.5  (((917748.1 503148.7, 917987.2 502~
+## 6 0116     RLS de La~    76    4.24     5.53 (((951316 523499.3, 952553.4 52248~</code></pre>
+<p>Fit a linear model of the number of cases per 1000 as a function of population density (it is suggested to apply a logarithmic transform to the latter). Check whether the model residuals are correlated between bordering RLS with a Moran’s test and then model the same data with a conditional autoregressive model.</p>
+</div>
+</div>
+<div id="reference" class="section level1">
+<h1>Reference</h1>
+<p>Ver Hoef, J.M., Peterson, E.E., Hooten, M.B., Hanks, E.M. and Fortin, M.-J. (2018) Spatial autoregressive models for statistical inference from ecological data. <em>Ecological Monographs</em> 88: 36-59.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

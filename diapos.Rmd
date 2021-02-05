@@ -698,3 +698,146 @@ For the case of a regression with spatial correlation:
 - Inverse distance weighting
 
 - Spatial smoothing (e.g. with splines)
+
+---
+
+class: inverse, center, middle
+
+# Models for areal data
+
+---
+
+# Areal data
+
+- Variables related to regions of space defined by polygons.
+
+--
+
+- A common type of data in social sciences and epidemiology, but also in natural resource management.
+
+---
+
+# Example: Forest managements units
+
+![](images/cartes_unites.png)
+
+*Source*: Ministère des Forêts, de la Faune et des Parcs du Québec.
+
+---
+# Neighbourhood network
+
+- Geostatistical methods could be applied by calculating, for example, the distance between the centers of polygons.
+
+--
+
+- Another option is to define a network where each region is connected to neighboring regions by a link.
+
+--
+
+- It is assumed that the variables are directly correlated between neighbouring regions only. 
+
+--
+
+
+- The level of correlation can vary between links if they are assigned different weights.
+
+---
+
+# Neighbourhood network
+
+- Weight matrix $W$: $w_{ij}$ is the weight of the link between regions $i$ and $j$. 
+
+- We have $w_{ii} = 0$.
+
+--
+
+- Binary weights: $w_{ij}$ of 1 if the regions are neighbouring, otherwise 0.
+
+--
+
+- Applies to data defined on a grid. In this case each cell can have 4 or 8 neighbouring cells (include diagonals or not).
+
+---
+
+# Moran's $I$
+
+- Autocorrelation coefficient of $z$, weighted by the $w_{ij}$ (varies from -1 to 1).
+
+$$I = \frac{N}{\sum_i \sum_j w_{ij}} \frac{\sum_i \sum_j w_{ij} (z_i - \bar{z}) (z_j - \bar{z})}{\sum_i (z_i - \bar{z})^2}$$
+
+- $N$ is the number of regions.
+
+--
+
+- Allows test of the null hypothesis of lack of spatial correlation between neighbouring regions.
+
+--
+
+- Can also be applied to point data. In this case, the point pairs are divided into distance classes and $I$ is calculated for each distance class.
+
+---
+
+# Spatial autoregression models
+
+$$v = \beta_0 + \sum_i \beta_i u_i + z + \epsilon$$
+
+- Response variable $v$ and predictors $u$.
+
+--
+
+- $z$: Spatially correlated residual between neighbouring regions.
+
+- $\epsilon$: Independent residual.
+
+--
+
+- Two types of autoregressive models for $z$: conditional autoregressive (CAR) or simultaneous autoregressive (SAR).
+
+---
+
+# Conditional autoregressive model (CAR)
+
+$$z_i \sim \text{N}\left(\sum_j \rho w_{ij} z_j,\sigma_{z_i} \right)$$
+--
+
+- $\rho$: Correlation parameter.
+
+- $w_{ij}$: Weight of link between regions $i$ and $j$.
+
+- $\sigma_{z_i}$: Residual standard deviation of $z_i$.
+
+--
+
+*Note*: If $w_{ij}$ is a binary matrix (0/1), then $\rho$ is the partial correlation coefficient between neighbouring regions.
+
+---
+
+# Simultaneous autoregressive model (SAR)
+
+$$z_i = \sum_j \rho w_{ij} z_j + \nu_i$$
+
+--
+
+- $\nu_i$ is an independent residual with standard deviation $\sigma_z$.
+
+--
+
+- Unlike the CAR model, $\rho$ is not directly equal to the partial correlation here.
+
+---
+
+# Autoregressive spatial models
+
+- The AIC can be used for model selection (CAR or SAR, definition of weights).
+
+--
+
+- By specifying correlations only between neighbouring regions, a CAR or SAR model is generally faster to compute than a geostatistical model where the correlations are global in scope.
+
+---
+
+# Références
+
+Ver Hoef, J.M., Peterson, E.E., Hooten, M.B., Hanks, E.M. et Fortin, M.-J. (2018) Spatial autoregressive models for statistical inference from ecological data. *Ecological Monographs* 88: 36-59.
+
+Fortin, M.-J. et Dale, M.R.T. (2005) *Spatial Analysis: A Guide for Ecologists*. Cambridge University Press: Cambridge, UK. 

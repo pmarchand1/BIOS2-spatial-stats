@@ -1,0 +1,724 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="Philippe Marchand, Université du Québec en Abitibi-Témiscamingue" />
+
+
+<title>Statistiques spatiales en écologie, Partie 4</title>
+
+<script src="libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="libs/bootstrap-3.3.5/css/united.min.css" rel="stylesheet" />
+<script src="libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="libs/navigation-1.1/tabsets.js"></script>
+<link href="libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="libs/highlightjs-9.12.0/highlight.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Statistiques spatiales en écologie, Partie 4</h1>
+<h4 class="author">Philippe Marchand, Université du Québec en Abitibi-Témiscamingue</h4>
+<h4 class="date">21 janvier 2021</h4>
+
+</div>
+
+
+<p>Dans les parties précédentes, nous avons vu comment tenir compte de la dépendance spatiale dans les modèles de régression linéaire avec des modèles géostatistiques (également appelés processus gaussiens) ou des modèles d’autocorrélation spatiale (CAR/SAR). Dans cette dernière partie, nous verrons comment combiner ces caractéristiques avec des modèles de régression plus complexes, en particulier les modèles linéaires généralisés à effets mixtes (GLMM).</p>
+<div id="glmm-avec-processus-spatial-gaussien" class="section level1">
+<h1>GLMM avec processus spatial gaussien</h1>
+<div id="données" class="section level2">
+<h2>Données</h2>
+<p>Le jeu de données <code>gambia</code> inclus avec le package <em>geoR</em> présente les résultats d’une étude sur la prévalence du paludisme chez les enfants de 65 villages en Gambie. Nous utiliserons une version légèrement transformée des données contenues dans le fichier <a href="data/gambia.csv">gambia.csv</a>.</p>
+<pre class="r"><code>library(geoR)
+
+gambia &lt;- read.csv(&quot;data/gambia.csv&quot;)
+head(gambia)</code></pre>
+<pre><code>##   id_village        x        y pos  age netuse treated green phc
+## 1          1 349.6313 1458.055   1 1783      0       0 40.85   1
+## 2          1 349.6313 1458.055   0  404      1       0 40.85   1
+## 3          1 349.6313 1458.055   0  452      1       0 40.85   1
+## 4          1 349.6313 1458.055   1  566      1       0 40.85   1
+## 5          1 349.6313 1458.055   0  598      1       0 40.85   1
+## 6          1 349.6313 1458.055   1  590      1       0 40.85   1</code></pre>
+<p>Voici les champs de ce jeu de données:</p>
+<ul>
+<li><em>id_village</em>: Identifiant du village.</li>
+<li><em>x</em> and <em>y</em>: Coordonnées spatiales du village (en km, basé sur les coordonnées UTM).</li>
+<li><em>pos</em>: Réponse binaire, si l’enfant a eu un test positif du paludisme.</li>
+<li><em>age</em>: Âge de l’enfant en jours.</li>
+<li><em>netuse</em>: Si l’enfant dort sous un moustiquaire ou non.</li>
+<li><em>treated</em>: Si le moustiquaire est traité ou non.</li>
+<li><em>green</em>: Mesure de la végétation basée sur les données de télédétection (disponible à l’échelle du village).</li>
+<li><em>phc</em>: Présence ou absence d’un centre de santé publique pour le village.</li>
+</ul>
+<p>Nous pouvons compter le nombre de cas positifs et le nombre total d’enfants testés par village pour cartographier la fraction des cas positifs (ou prévalence, <em>prev</em>).</p>
+<pre class="r"><code># Jeu de données à l&#39;échelle du village
+gambia_agg &lt;- group_by(gambia, id_village, x, y, green, phc) %&gt;%
+    summarize(pos = sum(pos), total = n()) %&gt;%
+    mutate(prev = pos / total) %&gt;%
+    ungroup()</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;id_village&#39;, &#39;x&#39;, &#39;y&#39;, &#39;green&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>head(gambia_agg)</code></pre>
+<pre><code>## # A tibble: 6 x 8
+##   id_village     x     y green   phc   pos total  prev
+##        &lt;int&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt; &lt;int&gt; &lt;int&gt; &lt;int&gt; &lt;dbl&gt;
+## 1          1  350. 1458.  40.8     1    17    33 0.515
+## 2          2  359. 1460.  40.8     1    19    63 0.302
+## 3          3  360. 1460.  40.1     0     7    17 0.412
+## 4          4  364. 1497.  40.8     0     8    24 0.333
+## 5          5  366. 1460.  40.8     0    10    26 0.385
+## 6          6  367. 1463.  40.8     0     7    18 0.389</code></pre>
+<pre class="r"><code>ggplot(gambia_agg, aes(x = x, y = y)) +
+    geom_point(aes(color = prev)) +
+    geom_path(data = gambia.borders, aes(x = x / 1000, y = y / 1000)) +
+    coord_fixed() +
+    theme_minimal() +
+    scale_color_viridis_c()</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-3-1.png" width="672" /></p>
+<p>Nous utilisons le jeu de données <code>gambia.borders</code> du package <em>geoR</em> pour tracer les frontières des pays avec <code>geom_path</code>. Comme ces frontières sont en mètres, nous les divisons par 1000 pour obtenir la même échelle que nos points. Nous utilisons également <code>coord_fixed</code> pour assurer un rapport d’aspect de 1:1 entre les axes et utilisons la palette de couleur <code>viridis</code>, qui permet de visualiser plus facilement une variable continue par rapport à la palette par défaut dans <em>ggplot2</em>.</p>
+<p>Sur la base de cette carte, il semble y avoir une corrélation spatiale dans la prévalence du paludisme, le groupe de villages de l’est montrant des valeurs de prévalence plus élevées (jaune-vert) et le groupe du milieu montrant des valeurs de prévalence plus faibles (violet).</p>
+</div>
+<div id="glmm-non-spatial" class="section level2">
+<h2>GLMM non spatial</h2>
+<p>Pour ce premier exemple, nous allons ignorer l’aspect spatial des données et modéliser la présence du paludisme (<em>pos</em>) en fonction de l’utilisation d’une moustiquaire (<em>netuse</em>) et de la présence d’un centre de santé publique (<em>phc</em>). Comme nous avons une réponse binaire, nous devons utiliser un modèle de régression logistique (un GLM). Comme nous avons des prédicteurs au niveau individuel et au niveau du village et que nous nous attendons à ce que les enfants d’un même village aient une probabilité plus similaire d’avoir le paludisme même après avoir pris en compte ces prédicteurs, nous devons ajouter un effet aléatoire du village. Le résultat est un GLMM que nous ajustons en utilisant la fonction <code>glmer</code> du package <em>lme4</em>.</p>
+<pre class="r"><code>library(lme4)
+
+mod_glmm &lt;- glmer(pos ~ netuse + phc + (1 | id_village), 
+                  data = gambia, family = binomial)
+summary(mod_glmm)</code></pre>
+<pre><code>## Generalized linear mixed model fit by maximum likelihood (Laplace
+##   Approximation) [glmerMod]
+##  Family: binomial  ( logit )
+## Formula: pos ~ netuse + phc + (1 | id_village)
+##    Data: gambia
+## 
+##      AIC      BIC   logLik deviance df.resid 
+##   2428.0   2450.5  -1210.0   2420.0     2031 
+## 
+## Scaled residuals: 
+##     Min      1Q  Median      3Q     Max 
+## -2.1286 -0.7120 -0.4142  0.8474  3.3434 
+## 
+## Random effects:
+##  Groups     Name        Variance Std.Dev.
+##  id_village (Intercept) 0.8149   0.9027  
+## Number of obs: 2035, groups:  id_village, 65
+## 
+## Fixed effects:
+##             Estimate Std. Error z value Pr(&gt;|z|)    
+## (Intercept)   0.1491     0.2297   0.649   0.5164    
+## netuse       -0.6044     0.1442  -4.190 2.79e-05 ***
+## phc          -0.4985     0.2604  -1.914   0.0556 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##        (Intr) netuse
+## netuse -0.422       
+## phc    -0.715 -0.025</code></pre>
+<p>D’après ces résultats, les variables <em>netuse</em> et <em>phc</em> sont toutes deux associées à une diminution de la prévalence du paludisme, bien que l’effet de <em>phc</em> ne soit pas significatif à un seuil <span class="math inline">\(\alpha = 0.05\)</span>. L’ordonnée à l’origine (0.149) est le logit de la probabilité de présence du paludisme pour un enfant sans moustiquaire et sans centre de santé publique, mais c’est l’ordonnée à l’origine moyenne pour tous les villages. Il y a beaucoup de variation entre les villages selon l’écart-type de l’effet aléatoire (0.90). Nous pouvons obtenir l’ordonnée à l’origine estimée pour chaque village avec la fonction <code>coef</code>:</p>
+<pre class="r"><code>head(coef(mod_glmm)$id_village)</code></pre>
+<pre><code>##   (Intercept)     netuse        phc
+## 1  0.93727515 -0.6043602 -0.4984835
+## 2  0.09204843 -0.6043602 -0.4984835
+## 3  0.22500620 -0.6043602 -0.4984835
+## 4 -0.46271089 -0.6043602 -0.4984835
+## 5  0.13680037 -0.6043602 -0.4984835
+## 6 -0.03723346 -0.6043602 -0.4984835</code></pre>
+<p>Par exemple, l’ordonnée à l’origine pour le village 1 est environ 0.94, équivalente à une probabilité de 72%:</p>
+<pre class="r"><code>plogis(0.937)</code></pre>
+<pre><code>## [1] 0.7184933</code></pre>
+<p>tandis que celle pour le village 2 est équivalente à une probabilité de 52%:</p>
+<pre class="r"><code>plogis(0.092)</code></pre>
+<pre><code>## [1] 0.5229838</code></pre>
+<p>Le <a href="https://cran.r-project.org/web/packages/DHARMa/vignettes/DHARMa.html">package DHARMa</a> fournit une méthode générale pour vérifier si les résidus d’un GLMM sont distribués selon le modèle spécifié et s’il existe une tendance résiduelle. Il simule des réplicats de chaque observation selon le modèle ajusté et détermine ensuite un “résidu standardisé”, qui est la position relative de la valeur observée par rapport aux valeurs simulées, par exemple 0 si l’observation est plus petite que toutes les simulations, 0.5 si elle se trouve au milieu, etc. Si le modèle représente bien les données, chaque valeur du résidu standardisé entre 0 et 1 doit avoir la même probabilité, de sorte que les résidus standardisés doivent produire une distribution uniforme entre 0 et 1.</p>
+<p>La fonction <code>simulateResiduals</code> effectue le calcul des résidus standardisés, puis la fonction <code>plot</code> trace les graphiques de diagnostic avec les résultats de certains tests.</p>
+<pre class="r"><code>library(DHARMa)
+res_glmm &lt;- simulateResiduals(mod_glmm)
+plot(res_glmm)</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>Le graphique de gauche est un graphique quantile-quantile des résidus standardisés. Les résultats de trois tests statistiques sont également présentés: un test de Kolmogorov-Smirnov (<em>KS</em>) qui vérifie s’il y a un écart par rapport à la distribution théorique, un test de dispersion qui vérifie s’il y a une sous-dispersion ou une surdispersion et un test de valeurs aberrantes (<em>outlier</em>) basé sur le nombre de résidus qui sont plus extrêmes que toutes les simulations. Ici, nous obtenons un résultat significatif pour les valeurs aberrantes, bien que le message indique que ce résultat pourrait avoir un taux d’erreur de type I plus grand que prévu dans ce cas.</p>
+<p>À droite, nous obtenons généralement un graphique des résidus standardisés (en <em>y</em>) en fonction du rang des valeurs prédites, afin de vérifier l’absence de tendance résiduelle. Ici, les prédictions sont regroupées par quartile, il serait donc préférable d’agréger les prédictions et les résidus par village, ce que nous pouvons faire avec la fonction <code>recalculateResiduals</code>.</p>
+<pre class="r"><code>plot(recalculateResiduals(res_glmm, group = gambia$id_village))</code></pre>
+<pre><code>## DHARMa:plot used testOutliers with type = binomial for computational reasons (nObs &gt; 500). Note that this method may not have inflated Type I error rates for integer-valued distributions. To get a more exact result, it is recommended to re-run testOutliers with type = &#39;bootstrap&#39;. See ?testOutliers for details</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>Le graphique de droite montre les points individuels, ainsi qu’une régression quantile pour le 1er quartile, la médiane et le 3e quartile. En théorie, ces trois courbes devraient être des lignes droites horizontales (pas de tendance des résidus par rapport aux prévisions). La courbe pour le 3e quartile (en rouge) est significativement différente d’une ligne horizontale, ce qui pourrait indiquer un effet systématique manquant dans le modèle.</p>
+</div>
+<div id="glmm-spatial-avec-spamm" class="section level2">
+<h2>GLMM spatial avec spaMM</h2>
+<p>Le package <em>spaMM</em> (modèles mixtes spatiaux) est un package R relativement récent qui permet d’effectuer une estimation approximative du maximum de vraisemblance des paramètres pour les GLM avec dépendance spatiale, modélisés soit comme un processus gaussien, soit avec un CAR (nous verrons ce dernier dans la dernière section). Le package implémente différents algorithmes, mais il existe une fonction unique <code>fitme</code> qui choisit l’algorithme approprié pour chaque type de modèle. Par exemple, voici le même modèle (non spatial) que nous avons vu ci-dessus, ajusté avec <em>spaMM</em>.</p>
+<pre class="r"><code>library(spaMM)
+
+mod_spamm_glmm &lt;- fitme(pos ~ netuse + phc + (1 | id_village),
+                        data = gambia, family = binomial)
+summary(mod_spamm_glmm)</code></pre>
+<pre><code>## formula: pos ~ netuse + phc + (1 | id_village)
+## Estimation of lambda by Laplace ML approximation (p_v).
+## Estimation of fixed effects by Laplace ML approximation (p_v).
+## family: binomial( link = logit ) 
+##  ------------ Fixed effects (beta) ------------
+##             Estimate Cond. SE t-value
+## (Intercept)   0.1491   0.2287  0.6519
+## netuse       -0.6045   0.1420 -4.2567
+## phc          -0.4986   0.2593 -1.9231
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    id_village  :  0.8151  
+##              --- Coefficients for log(lambda):
+##       Group        Term Estimate Cond.SE
+##  id_village (Intercept)  -0.2045  0.2008
+## # of obs: 2035; # of groups: id_village, 65 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## p_v(h) (marginal L): -1210.016</code></pre>
+<p>Notez que les estimés des effets fixes ainsi que la variance des effets aléatoires sont presque identiques à ceeux obtenues par <code>glmer</code> ci-dessus.</p>
+<p>Nous pouvons maintenant utiliser <em>spaMM</em> pour ajuster le même modèle avec l’ajout de corrélations spatiales entre les villages. Dans la formule du modèle, ceci est représenté comme un effet aléatoire <code>Matern(1 | x + y)</code>, ce qui signifie que les ordonnées à l’origine sont spatialement corrélées entre les villages suivant une fonction de corrélation de Matérn des coordonnées (<em>x, y</em>). La fonction de Matérn est une fonction flexible de corrélation spatiale qui comprend un paramètre de forme <span class="math inline">\(\nu\)</span> (<code>nu</code>), de sorte que lorsque <span class="math inline">\(\nu = 0,5\)</span>, elle est équivalente à la corrélation exponentielle, mais quand <span class="math inline">\(\nu\)</span> prend de grandes valeurs, elle se rapproche d’une corrélation gaussienne. Nous pourrions laisser la fonction estimer <span class="math inline">\(\nu\)</span>, mais ici nous le fixons à 0.5 avec l’argument <code>fixed</code> de <code>fitme</code>.</p>
+<pre class="r"><code>mod_spamm &lt;- fitme(pos ~ netuse + phc + Matern(1 | x + y) + (1 | id_village),
+                   data = gambia, family = binomial, fixed = list(nu = 0.5))</code></pre>
+<pre><code>## Increase spaMM.options(separation_max=&lt;.&gt;) to at least 21 if you want to check separation (see &#39;help(separation)&#39;).</code></pre>
+<pre class="r"><code>summary(mod_spamm)</code></pre>
+<pre><code>## formula: pos ~ netuse + phc + Matern(1 | x + y) + (1 | id_village)
+## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
+## Estimation of fixed effects by Laplace ML approximation (p_v).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
+## family: binomial( link = logit ) 
+##  ------------ Fixed effects (beta) ------------
+##             Estimate Cond. SE t-value
+## (Intercept)  0.06861   0.3352  0.2047
+## netuse      -0.51719   0.1407 -3.6757
+## phc         -0.44416   0.2052 -2.1648
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##       1.nu      1.rho 
+## 0.50000000 0.05128691 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    x + y  :  0.6421 
+##    id_village  :  0.1978  
+## # of obs: 2035; # of groups: x + y, 65; id_village, 65 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## p_v(h) (marginal L): -1197.968</code></pre>
+<p>Commençons par vérifier les effets aléatoires du modèle. La fonction de corrélation spatiale a un paramètre <code>rho</code> égal à 0.0513. Ce paramètre dans <em>spaMM</em> est l’inverse de la portée, donc ici la portée de la corrélation exponentielle est de 1/0.0513 ou environ 19.5 km. Il y a maintenant deux pramètres de variance, celui identifié comme <code>x + y</code> est la variance à longue distance (i.e. le palier) pour le modèle de corrélation exponentielle alors que celui identifié comme <code>id_village</code> montre la portion non corrélée de la variation entre les villages.</p>
+<p>Si nous avions ici laissé les effets aléatoires <code>(1 | id_village)</code> dans la formule pour représenter la partie non spatiale de la variation entre les villages, nous pourrions également représenter ceci avec un effet de pépite dans le modèle géostatistique. Dans les deux cas, cela représenterait l’idée que même deux villages très proches l’un de l’autre auraient des prévalences de base différentes dans le modèle.</p>
+<p>Par défaut, la fonction <code>Matern</code> n’a pas d’effet de pépite, mais nous pouvons en ajouter un en spécifiant une <code>pépite</code> non nulle dans la liste initiale des paramètres <code>init</code>.</p>
+<pre class="r"><code>mod_spamm2 &lt;- fitme(pos ~ netuse + phc + Matern(1 | x + y),
+                    data = gambia, family = binomial, fixed = list(nu = 0.5),
+                    init = list(Nugget = 0.1))</code></pre>
+<pre><code>## Increase spaMM.options(separation_max=&lt;.&gt;) to at least 21 if you want to check separation (see &#39;help(separation)&#39;).</code></pre>
+<pre class="r"><code>summary(mod_spamm2)</code></pre>
+<pre><code>## formula: pos ~ netuse + phc + Matern(1 | x + y)
+## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
+## Estimation of fixed effects by Laplace ML approximation (p_v).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
+## family: binomial( link = logit ) 
+##  ------------ Fixed effects (beta) ------------
+##             Estimate Cond. SE t-value
+## (Intercept)  0.06861   0.3352  0.2047
+## netuse      -0.51719   0.1407 -3.6757
+## phc         -0.44416   0.2052 -2.1648
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##       1.nu   1.Nugget      1.rho 
+## 0.50000000 0.23551026 0.05128692 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    x + y  :  0.8399  
+## # of obs: 2035; # of groups: x + y, 65 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## p_v(h) (marginal L): -1197.968</code></pre>
+<p>Comme vous pouvez le voir, toutes les estimations sont les mêmes, sauf que la variance de la portion spatiale (palier) est maintenant de 0.84 et que la pépite est égale à une fraction 0.235 de ce palier, soit une variance de 0.197, ce qui est identique à l’effet aléatoire <code>id_village</code> dans la version ci-dessus. Les deux formulations sont donc équivalentes.</p>
+<p>Maintenant, rappelons les coefficients que nous avions obtenus pour le GLMM non spatial :</p>
+<pre class="r"><code>summary(mod_glmm)$coefficients</code></pre>
+<pre><code>##               Estimate Std. Error    z value     Pr(&gt;|z|)
+## (Intercept)  0.1490596  0.2296971  0.6489399 5.163772e-01
+## netuse      -0.6043602  0.1442448 -4.1898242 2.791706e-05
+## phc         -0.4984835  0.2604083 -1.9142381 5.558973e-02</code></pre>
+<p>Dans la version spatiale, les deux effets fixes se sont légèrement rapprochés de zéro, mais l’erreur-type de l’effet de <code>phc</code> a diminué. Il est intéressant de noter que l’inclusion de la dépendance spatiale nous a permis d’estimer plus précisément l’effet de la présence d’un centre de santé publique dans le village. Ce ne serait pas toujours le cas: pour un prédicteur qui est également fortement corrélé dans l’espace, la corrélation spatiale dans la réponse rend plus difficile l’estimation de l’effet de ce prédicteur, puisqu’il est confondu avec l’effet spatial. Cependant, pour un prédicteur qui n’est pas corrélé dans l’espace, l’inclusion de l’effet spatial réduit la variance résiduelle (non spatiale) et peut donc augmenter la précision de l’effet du prédicteur.</p>
+<p>Le package <em>spaMM</em> est également compatible avec <em>DHARMa</em> pour les diagnostics résiduels. (Vous pouvez ignorer l’avertissement selon lequel il ne fait pas partie de la classe des modèles pris en charge, cela est dû à l’utilisation de la fonction <code>fitme</code> plutôt que d’une fonction d’algorithme spécifique dans <em>spaMM</em>).</p>
+<pre class="r"><code>res_spamm &lt;- simulateResiduals(mod_spamm2)</code></pre>
+<pre><code>## Warning in checkModel(fittedModel): DHARMa: fittedModel not in class of
+## supported models. Absolutely no guarantee that this will work!</code></pre>
+<pre class="r"><code>plot(res_spamm)</code></pre>
+<pre><code>## DHARMa:plot used testOutliers with type = binomial for computational reasons (nObs &gt; 500). Note that this method may not have inflated Type I error rates for integer-valued distributions. To get a more exact result, it is recommended to re-run testOutliers with type = &#39;bootstrap&#39;. See ?testOutliers for details</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-14-1.png" width="672" /></p>
+<pre class="r"><code>plot(recalculateResiduals(res_spamm, group = gambia$id_village))</code></pre>
+<pre><code>## DHARMa:plot used testOutliers with type = binomial for computational reasons (nObs &gt; 500). Note that this method may not have inflated Type I error rates for integer-valued distributions. To get a more exact result, it is recommended to re-run testOutliers with type = &#39;bootstrap&#39;. See ?testOutliers for details</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-14-2.png" width="672" /></p>
+<p>Enfin, bien que nous allons montrer comment calculer et visualiser des prédictions spatiales ci-dessous, nous pouvons produire une carte rapide des effets spatiaux estimés dans un modèle <em>spaMM</em> avec la fonction <code>filled.mapMM</code>.</p>
+<pre class="r"><code>filled.mapMM(mod_spamm2)</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+</div>
+<div id="processus-gaussiens-vs.-splines-de-lissage" class="section level2">
+<h2>Processus gaussiens vs. splines de lissage</h2>
+<p>Si vous connaissez bien les modèles additifs généralisés (GAM), vous avez peut-être pensé à représenter la variation spatiale de la prévalence du paludisme (comme le montre la carte ci-dessus) par une spline de lissage en 2D (en fonction de <span class="math inline">\(x\)</span> et <span class="math inline">\(y\)</span>) dans un GAM.</p>
+<p>Le code ci-dessous correspond à l’équivalent GAM de notre GLMM avec processus gaussien ci-dessus, ajusté avec la fonction <code>gam</code> du package <em>mgcv</em>. L’effet spatial est représenté par la spline 2D <code>s(x, y)</code> alors que l’effet aléatoire non spatial de village est représenté par <code>s(id_village, bs = "re")</code>, qui est équivalent à <code>(1 | id_village)</code> dans les modèles précédents. Notez que pour la fonction <code>gam</code>, les variables catégorielles doivent être explicitement converties en facteurs.</p>
+<pre class="r"><code>library(mgcv)
+gambia$id_village &lt;- as.factor(gambia$id_village)
+mod_gam &lt;- gam(pos ~ netuse + phc + s(id_village, bs = &quot;re&quot;) + s(x, y), 
+               data = gambia, family = binomial)</code></pre>
+<p>Pour visualiser la spline en 2D, nous utiliserons le package <a href="https://fromthebottomoftheheap.net/2018/10/23/introducing-gratia/"><em>gratia</em></a>.</p>
+<pre class="r"><code>library(gratia)
+draw(mod_gam)</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-17-1.png" width="672" /></p>
+<p>Notez que le graphique de la spline <code>s(x, y)</code> (en haut à droite) ne s’étend pas trop loin des emplacements des données (les autres zones sont vides). Dans ce graphique, on peut également voir que les effets aléatoires des villages suivent la distribution gaussienne attendue (en haut à gauche).</p>
+<p>Ensuite, nous utiliserons à la fois le GLMM spatial de la section précédente et ce GAMM pour prédire la prévalence moyenne sur une grille spatiale de points contenue dans le fichier <a href="data/gambia_pred.csv">gambia_pred.csv</a>. Le graphique ci-dessous ajoute ces points de prédiction (en noir) sur la carte précédente des points de données.</p>
+<pre class="r"><code>gambia_pred &lt;- read.csv(&quot;data/gambia_pred.csv&quot;)
+
+ggplot(gambia_agg, aes(x = x, y = y)) +
+    geom_point(data = gambia_pred) +
+    geom_point(aes(color = prev)) +
+    geom_path(data = gambia.borders, aes(x = x / 1000, y = y / 1000)) +
+    coord_fixed() +
+    theme_minimal() +
+    scale_color_viridis_c()</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-18-1.png" width="672" /></p>
+<p>Pour faire des prédictions à partir du modèle GAMM à ces endroits, le code ci-dessous effectue les étapes suivantes:</p>
+<ul>
+<li><p>Tous les prédicteurs du modèle doivent se trouver dans le tableau de données de prédiction, nous ajoutons donc des valeurs constantes de <em>netuse</em> et <em>phc</em> (toutes deux égales à 1) pour tous les points. Ainsi, nous ferons des prédictions sur la prévalence du paludisme dans le cas où un moustiquaire est utilisée et où un centre de santé publique est présent. Nous ajoutons également un <em>id_village</em> constant, bien qu’il ne soit pas utilisé dans les prédictions (voir ci-dessous).</p></li>
+<li><p>Nous appelons la fonction <code>predict</code> à la sortie de <code>gam</code> pour produire des prédictions aux nouveaux points de données (argument <code>newdata</code>), en incluant les erreurs-types (<code>se.fit = TRUE</code>) et en excluant les effets aléatoires du village, donc la prédiction est faite pour un “village moyen”. L’objet résultant <code>gam_pred</code> aura des colonnes <code>fit</code> (prédiction moyenne) et <code>se.fit</code> (erreur-type). Ces prédictions et erreurs-types sont sur l’échelle du lien (logit).</p></li>
+<li><p>Nous rattachons le jeu de données de prédiction original à <code>gam_pred</code> avec <code>cbind</code>.</p></li>
+<li><p>Nous ajoutons des colonnes pour la prédiction moyenne et les limites de l’intervalle de confiance à 50% (moyenne <span class="math inline">\(\pm\)</span> 0.674 erreur-type), converties de l’échelle logit à l’échelle de probabilité avec <code>plogis</code>. Nous choisissons un intervalle de 50% car un intervalle de 95% peut être trop large ici pour contraster les différentes prédictions sur la carte à la fin de cette section.</p></li>
+</ul>
+<pre class="r"><code>gambia_pred &lt;- mutate(gambia_pred, netuse = 1, phc = 1, id_village = 1)
+
+gam_pred &lt;- predict(mod_gam, newdata = gambia_pred, se.fit = TRUE, 
+                    exclude = &quot;s(id_village)&quot;)
+gam_pred &lt;- cbind(gambia_pred, as.data.frame(gam_pred))
+gam_pred &lt;- mutate(gam_pred, pred = plogis(fit), 
+                   lo = plogis(fit - 0.674 * se.fit), # 50% CI
+                   hi = plogis(fit + 0.674 * se.fit))</code></pre>
+<p><em>Note</em> : La raison pour laquelle nous ne faisons pas de prédictions directement sur l’échelle de probabilité (réponse) est que la formule normale des intervalles de confiance s’applique plus précisément sur l’échelle logit. L’ajout d’un certain nombre d’erreurs-types autour de la moyenne sur l’échelle de probabilité conduirait à des intervalles moins précis et peut-être même à des intervalles de confiance en dehors de la plage de valeurs possible (0, 1) pour une probabilité.</p>
+<p>Nous appliquons la même stratégie pour faire des prédictions à partir du GLMM spatial avec <em>spaMM</em>. Il y a quelques différences dans la méthode <code>predict</code> par rapport au cas du GAMM.</p>
+<ul>
+<li><p>L’argument <code>binding = "fit"</code> signifie que les prédictions moyennes (colonne <code>fit</code>) seront attachées à l’ensemble de données de prédiction et retournées sous forme de tableau de données <code>spamm_pred</code>.</p></li>
+<li><p>L’argument <code>variances = list(linPred = TRUE)</code> indique à <code>predict</code> de calculer la variance du prédicteur linéaire (donc le carré de l’erreur-type). Cependant, il apparaît comme un attribut <code>predVar</code> dans le tableau de données de sortie plutôt que dans une colonne <code>se.fit</code>, donc nous le déplaçons vers une colonne sur la ligne suivante.</p></li>
+</ul>
+<pre class="r"><code>spamm_pred &lt;- predict(mod_spamm, newdata = gambia_pred, type = &quot;link&quot;,
+                      binding = &quot;fit&quot;, variances = list(linPred = TRUE))
+spamm_pred$se.fit &lt;- sqrt(attr(spamm_pred, &quot;predVar&quot;))
+spamm_pred &lt;- mutate(spamm_pred, pred = plogis(fit), 
+                     lo = plogis(fit - 0.674 * se.fit),
+                     hi = plogis(fit + 0.674 * se.fit))</code></pre>
+<p>Enfin, nous combinons les deux ensembles de prédictions sous la forme de différentes rangées d’un tableau de données <code>pred_all</code> avec <code>bind_rows</code>. Le nom du tableau de données d’où provient chaque prédiction (<code>gam</code> ou <code>spamm</code>) apparaîtra dans la colonne “model” (argument <code>.id</code>). Pour simplifier la production du prochain graphique, nous utilisons ensuite <code>pivot_longer</code> dans le package <em>tidyr</em> pour changer les trois colonnes “pred”, “lo” et “hi” en deux colonnes, “stat” et “value” (<code>pred_tall</code> a donc trois rangées pour chaque rangée dans <code>pred_all</code>).</p>
+<pre class="r"><code>pred_all &lt;- bind_rows(gam = gam_pred, spamm = spamm_pred, .id = &quot;model&quot;)
+
+library(tidyr)
+pred_tall &lt;- pivot_longer(pred_all, c(pred, lo, hi), names_to = &quot;stat&quot;,
+                          values_to = &quot;value&quot;)</code></pre>
+<p>Une fois ces étapes franchies, nous pouvons enfin examiner les cartes de prédiction (moyenne, limites inférieure et supérieure de l’intervalle de confiance à 50 %) à l’aide d’un graphique <code>ggplot</code>. Les points de données originaux sont indiqués en rouge.</p>
+<pre class="r"><code>ggplot(pred_tall, aes(x = x, y = y)) +
+    geom_point(aes(color = value)) +
+    geom_point(data = gambia_agg, color = &quot;red&quot;, size = 0) +
+    coord_fixed() +
+    facet_grid(stat~model) +
+    scale_color_viridis_c() +
+    theme_minimal()</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-22-1.png" width="672" /></p>
+<p>Bien que les deux modèles s’accordent à dire que la prévalence est plus élevée près du groupe de villages de l’est, le GAMM estime également une prévalence plus élevée en quelques points (bord ouest et autour du centre) où il n’y a pas de données. Il s’agit d’un artefact de la forme de la spline autour des points de données, puisqu’une spline est censée correspondre à une tendance globale, bien que non linéaire. En revanche, le modèle géostatistique représente l’effet spatial sous forme de corrélations locales et revient à la prévalence moyenne globale lorsqu’il est éloigné de tout point de données, ce qui est une supposition plus sûre. C’est l’une des raisons pour lesquelles il est préférable de choisir un modèle géostatistique / processus gaussien dans ce cas.</p>
+</div>
+<div id="méthodes-bayésiennes-pour-les-glmm-avec-processus-gaussiens" class="section level2">
+<h2>Méthodes bayésiennes pour les GLMM avec processus gaussiens</h2>
+<p>Les modèles bayésiens fournissent un cadre flexible pour exprimer des modèles avec une structure de dépendance complexe entre les données, y compris la dépendance spatiale. Cependant, l’ajustement d’un modèle de processus gaussien avec une approche entièrement bayésienne peut être lent, en raison de la nécessité de calculer une matrice de covariance spatiale entre toutes les paires de points à chaque itération.</p>
+<p>La méthode INLA (pour <em>integrated nested Laplace approximation</em>) effectue un calcul approximatif de la distribution postérieure bayésienne, ce qui la rend adaptée aux problèmes de régression spatiale. Nous ne l’abordons pas dans ce cours, mais je recommande le manuel de Paula Moraga (dans la section des références ci-dessous) qui fournit des exemples concrets d’utilisation de la méthode INLA pour divers modèles de données géostatistiques et aréales, dans le contexte de l’épidémiologie, y compris des modèles avec une dépendance à la fois spatiale et temporelle. Le livre présente les mêmes données sur le paludisme en Gambie comme exemple d’un ensemble de données géostatistiques, ce qui a inspiré son utilisation dans ce cours.</p>
+</div>
+</div>
+<div id="glmm-avec-autorégression-spatiale" class="section level1">
+<h1>GLMM avec autorégression spatiale</h1>
+<p>Nous revenons au dernier exemple de la partie précédente, où nous avions modélisé le taux de cas de COVID-19 (cas / 1000) pour les divisions administratives du réseau de la santé (RLS) au Québec en fonction de leur densité de population. Le taux est donné par la colonne “taux_1k” dans le <em>shapefile</em> <code>rls_covid</code>.</p>
+<pre class="r"><code>library(sf)
+rls_covid &lt;- read_sf(&quot;data/rls_covid.shp&quot;)
+rls_covid &lt;- rls_covid[!is.na(rls_covid$dens_pop), ]
+plot(rls_covid[&quot;taux_1k&quot;])</code></pre>
+<p><img src="4-Modeles_complexes_files/figure-html/unnamed-chunk-23-1.png" width="672" /></p>
+<p>Auparavant, nous avions modélisé le logarithme de ce taux comme une fonction linéaire du logarithme de la densité de population, la variance résiduelle étant corrélée entre les unités voisines via une structure CAR (autorégression conditionnelle), comme le montre le code ci-dessous.</p>
+<pre class="r"><code>library(spdep)
+library(spatialreg)
+
+rls_nb &lt;- poly2nb(rls_covid)
+rls_w &lt;- nb2listw(rls_nb, style = &quot;B&quot;)
+
+car_lm &lt;- spautolm(log(taux_1k) ~ log(dens_pop), data = rls_covid,
+                   listw = rls_w, family = &quot;CAR&quot;)
+summary(car_lm)</code></pre>
+<pre><code>## 
+## Call: spautolm(formula = log(taux_1k) ~ log(dens_pop), data = rls_covid, 
+##     listw = rls_w, family = &quot;CAR&quot;)
+## 
+## Residuals:
+##       Min        1Q    Median        3Q       Max 
+## -1.201858 -0.254084 -0.053348  0.281482  1.427053 
+## 
+## Coefficients: 
+##               Estimate Std. Error z value  Pr(&gt;|z|)
+## (Intercept)   1.702068   0.168463 10.1035 &lt; 2.2e-16
+## log(dens_pop) 0.206623   0.032848  6.2903 3.169e-10
+## 
+## Lambda: 0.15762 LR test value: 23.991 p-value: 9.6771e-07 
+## Numerical Hessian standard error of lambda: 0.0050486 
+## 
+## Log likelihood: -80.68953 
+## ML residual variance (sigma squared): 0.2814, (sigma: 0.53048)
+## Number of observations: 95 
+## Number of parameters estimated: 4 
+## AIC: 169.38</code></pre>
+<p><em>Rappel</em>: La fonction <code>poly2nb</code> du package <em>spdep</em> crée une liste de voisins basée sur les polygones limitrophes dans un <em>shapefile</em>, puis <code>nb2listw</code> la convertit en une liste de poids, ici des poids binaires (<code>style = "B"</code>) de sorte que chaque région limitrophe reçoive le même poids de 1 dans le modèle autorégressif.</p>
+<p>Au lieu d’utiliser les taux, il serait possible de modéliser directement les cas avec une régression de Poisson, qui est appropriée pour les données de comptage. Pour tenir compte du fait que si le risque par personne était égal, les cas seraient proportionnels à la population, nous pouvons ajouter la population de l’unité <code>pop</code> comme <em>offset</em> dans la régression de Poisson. Par conséquent, le modèle ressemblerait à : <code>cas ~ log(dens_pop) + offset(log(pop))</code>. Notez que puisque la régression de Poisson utilise un lien logarithmique, ce modèle avec <code>log(pop)</code> comme <em>offset</em> suppose que <code>log(cas / pop)</code> (donc le taux logarithmique) est proportionnel à <code>log(dens_pop)</code>, tout comme le modèle linéaire ci-dessus, mais il a l’avantage de modéliser la variabilité des données brutes (le nombre de cas) directement avec une distribution de Poisson.</p>
+<p>Nous n’avons pas la population dans ces données, mais nous pouvons l’estimer à partir des cas et du taux (cas / 1000) comme suit:</p>
+<pre class="r"><code>rls_covid$pop &lt;- rls_covid$cas / rls_covid$taux_1k * 1000</code></pre>
+<p>Pour définir un modèle CAR dans <em>spaMM</em>, nous avons besoin d’une matrice de poids plutôt que d’une liste de poids comme dans le package <em>spatialreg</em>. Heureusement, le package <em>spdep</em> comprend également une fonction <code>nb2mat</code> pour convertir la liste des voisins en une matrice de poids, là encore en utilisant des poids binaires. Pour éviter un avertissement dans R, nous spécifions que les noms des lignes et des colonnes de cette matrice doivent être égaux aux identifiants associés à chaque unité (<code>RLS_code</code>). Ensuite, nous ajoutons un terme <code>adjacency(1 | RLS_code)</code> au modèle pour spécifier que la variation résiduelle entre les différents groupes définis par <code>RLS_code</code> est spatialement corrélée avec une structure CAR (ici, chaque groupe n’a qu’une observation puisque nous avons un point de données par unité RLS).</p>
+<pre class="r"><code>library(spaMM)
+
+rls_mat &lt;- nb2mat(rls_nb, style = &quot;B&quot;)
+rownames(rls_mat) &lt;- rls_covid$RLS_code
+colnames(rls_mat) &lt;- rls_covid$RLS_code
+
+rls_spamm &lt;- fitme(cas ~ log(dens_pop) + offset(log(pop)) + adjacency(1 | RLS_code),
+                   data = rls_covid, adjMatrix = rls_mat, family = poisson)</code></pre>
+<pre><code>## Iterative algorithm converges slowly. See help(&#39;convergence&#39;) for suggestions.</code></pre>
+<pre class="r"><code>summary(rls_spamm)</code></pre>
+<pre><code>## formula: cas ~ log(dens_pop) + offset(log(pop)) + adjacency(1 | RLS_code)
+## Estimation of corrPars and lambda by Laplace ML approximation (p_v).
+## Estimation of fixed effects by Laplace ML approximation (p_v).
+## Estimation of lambda by &#39;outer&#39; ML, maximizing p_v.
+## family: poisson( link = log ) 
+##  ------------ Fixed effects (beta) ------------
+##               Estimate Cond. SE t-value
+## (Intercept)    -5.1618  0.16855 -30.625
+## log(dens_pop)   0.1999  0.03267   6.119
+##  --------------- Random effects ---------------
+## Family: gaussian( link = identity ) 
+##                    --- Correlation parameters:
+##     1.rho 
+## 0.1576605 
+##            --- Variance parameters (&#39;lambda&#39;):
+## lambda = var(u) for u ~ Gaussian; 
+##    RLS_code  :  0.266  
+## # of obs: 95; # of groups: RLS_code, 95 
+##  ------------- Likelihood values  -------------
+##                         logLik
+## p_v(h) (marginal L): -709.3234</code></pre>
+<p>Notez que le coefficient de corrélation spatiale <code>rho</code> (0.158) est similaire à la quantité équivalente dans le modèle <code>spautolm</code> ci-dessus, où il était appelé <code>Lambda</code>. L’effet de <code>log(dens_pop)</code> est également d’environ 0.2 dans les deux modèles.</p>
+</div>
+<div id="référence" class="section level1">
+<h1>Référence</h1>
+<p>Moraga, Paula (2019) Geospatial Health Data: Modeling and Visualization with R-INLA and Shiny. Chapman &amp; Hall/CRC Biostatistics Series. Disponible en ligne: <a href="https://www.paulamoraga.com/book-geospatial/">https://www.paulamoraga.com/book-geospatial/</a>.</p>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

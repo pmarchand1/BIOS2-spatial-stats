@@ -8,4 +8,4 @@ title: Spatial statistics in ecology
 
 3. [Models for areal data](3-Areal_data.html) - [PDF](3-Areal_data.pdf) ([notes en français](3-Donnees_areales.html) - [PDF](3-Donnees_areales.pdf)) - Data: [areal_data.zip](data/areal_data.zip)
 
-4. [Complex models](4-Complex_models.html) - [PDF](4-Complex_models.pdf) - Data: [gambia.csv](data/gambia.csv), [gambia_pred.csv](data/gambia_pred.csv)
+4. [Complex models](4-Complex_models.html) - [PDF](4-Complex_models.pdf) ([notes en français](4-Modeles_complexes.html) - [PDF](4-Modeles_complexes.pdf)) - Data: [gambia.csv](data/gambia.csv), [gambia_pred.csv](data/gambia_pred.csv)
